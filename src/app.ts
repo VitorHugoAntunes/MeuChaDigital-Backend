@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import session from 'express-session';
 import passport from 'passport';
 import authRoutes from './routes/authRoutes';
@@ -21,7 +21,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use((req, res, next) => {
-  if (req.path === '/' || req.path.startsWith('/auth')) {
+  if (req.path === '/' || req.path.startsWith('/auth') || req.path.startsWith('/payment/webhook') || req.path.startsWith('/test-webhook')) {
     return next();
   }
   isLoggedIn(req, res, next);
@@ -29,20 +29,17 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-app.post("/webhook(/pix)?", (req, res) => {
-  if (req.isAuthenticated()) {
-    console.log("Requisição autorizada:", req.body);
-    res.status(200).send("OK");
-  } else {
-    console.log("Requisição não autorizada!");
-    res.status(401).send("Unauthorized");
-  }
-});
-
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/list', giftRoutes);
 app.use('/payment', paymentRoutes);
+
+app.post('/test-webhook(/pix)?', (req: Request, res: Response) => {
+  console.log(req.body);
+  console.log(req.headers);
+  res.send('Webhook recebido');
+  res.status(200);
+});
 
 app.get('/', (_req, res) => {
   res.send('<a href="/auth/google">Autenticar com Google</a>');

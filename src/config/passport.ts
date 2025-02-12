@@ -3,11 +3,15 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy, VerifyCallback } from 'passport-google-oauth2';
 import { Request } from 'express';
 import { Profile } from 'passport';
-import { env } from "process";
+// import { env } from "process";
+import dotenv from 'dotenv';
+dotenv.config();
 
-const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID || 'GOOGLE_CLIENT_ID';
-const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET || 'GOOGLE_CLIENT_SECRET';
-const GOOGLE_CALLBACK_URL = env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'GOOGLE_CLIENT_ID';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || 'GOOGLE_CLIENT_SECRET';
+const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback';
+
+console.log(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL);
 
 interface GoogleProfile extends Profile {
   email: string;

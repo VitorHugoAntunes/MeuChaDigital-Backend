@@ -2,12 +2,14 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
-import { env } from 'process';
+// import { env } from 'process';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const EFI_CLIENT_ID = env.EFI_CLIENT_ID || 'EFI_CLIENT_ID';
-const EFI_CLIENT_SECRET = env.EFI_CLIENT_SECRET || 'EFI_CLIENT_SECRET';
-const EFI_URL = env.EFI_URL || 'https://pix-h.api.efipay.com.br';
-const EFI_CERTIFICATE_PATH = env.EFI_CERTIFICATE_PATH || '../../certificates/homologacao-699618-MeuChaDigital.p12';
+const EFI_CLIENT_ID = process.env.EFI_CLIENT_ID || 'EFI_CLIENT_ID';
+const EFI_CLIENT_SECRET = process.env.EFI_CLIENT_SECRET || 'EFI_CLIENT_SECRET';
+const EFI_URL = process.env.EFI_URL || 'https://pix.api.efipay.com.br';
+const EFI_CERTIFICATE_PATH = process.env.EFI_CERTIFICATE_PATH || '../../certificates/producao-699618-MeuChaDigital.p12';
 
 const cert = fs.readFileSync(path.resolve(__dirname, EFI_CERTIFICATE_PATH));
 
