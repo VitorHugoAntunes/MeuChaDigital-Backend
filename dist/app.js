@@ -10,6 +10,7 @@ const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const giftRoutes_1 = __importDefault(require("./routes/giftRoutes"));
 const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
+const inviteeRoutes_1 = __importDefault(require("./routes/inviteeRoutes"));
 const contributionController_1 = require("./controllers/contributionController");
 const authMiddleware_1 = require("./middlewares/authMiddleware");
 require("./config/passport");
@@ -39,6 +40,7 @@ app.use('/auth', authRoutes_1.default);
 app.use('/users', userRoutes_1.default);
 app.use('/lists', giftRoutes_1.default);
 app.use('/payments', paymentRoutes_1.default);
+app.use('/invitees', inviteeRoutes_1.default);
 app.post('/test-webhook(/pix)?', async (req, res) => {
     try {
         console.log('Webhook de pagamento recebido');

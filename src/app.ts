@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import giftRoutes from './routes/giftRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import inviteeRoutes from './routes/inviteeRoutes';
 import { createContribution } from './controllers/contributionController'
 import { isLoggedIn } from './middlewares/authMiddleware';
 import './config/passport';
@@ -41,6 +42,7 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/lists', giftRoutes);
 app.use('/payments', paymentRoutes);
+app.use('/invitees', inviteeRoutes);
 
 app.post('/test-webhook(/pix)?', async (req: Request, res: Response) => {
   try {
