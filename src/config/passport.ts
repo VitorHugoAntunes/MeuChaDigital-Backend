@@ -55,7 +55,6 @@ passport.use(
         };
 
         if (_req.res) {
-console.log("Criando usuario pelo google", userParams);
           const user = await createUser(userParams);
           return done(null, user);
         } else {

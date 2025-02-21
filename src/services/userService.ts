@@ -4,7 +4,6 @@ import { UserCreate, GuestUserCreate } from '../models/userModel';
 const prisma = new PrismaClient();
 
 const createUser = async (data: UserCreate) => {
-  console.log("DADOS QUE VEM DA CRIACAO DO USUARIO", data)
   const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
 
   if (existingUser) {
@@ -12,9 +11,10 @@ const createUser = async (data: UserCreate) => {
   }
 
   let photoId = undefined;
+  let createdPhoto = undefined;
 
   if (data.photo) {
-    const createdPhoto = await prisma.image.create({
+    createdPhoto = await prisma.image.create({
       data: { url: data.photo },
     });
     photoId = createdPhoto.id;
@@ -32,9 +32,16 @@ const createUser = async (data: UserCreate) => {
     },
   });
 
+
+  if (createdPhoto) {
+    await prisma.image.update({
+      where: { id: createdPhoto.id },
+      data: { userId: user.id },
+    });
+  }
+
   return user;
 };
-
 
 const createGuestUser = async (data: GuestUserCreate) => {
   const user = await prisma.user.create({
