@@ -7,12 +7,22 @@ const createUser = async (data) => {
     if (existingUser) {
         return existingUser;
     }
+    let photoId = undefined;
+    if (data.photo) {
+        const createdPhoto = await prisma.image.create({
+            data: { url: data.photo },
+        });
+        photoId = createdPhoto.id;
+    }
     const user = await prisma.user.create({
         data: {
             name: data.name,
             email: data.email,
             googleId: data.googleId,
-            photo: data.photo,
+            photoId,
+        },
+        include: {
+            photo: true,
         },
     });
     return user;
@@ -38,13 +48,31 @@ const getUserById = async (id) => {
     return user;
 };
 const updateUser = async (id, data) => {
+    let photoId = undefined;
+    if (data.photo) {
+        const existingPhoto = await prisma.image.findFirst({
+            where: { url: data.photo },
+        });
+        if (existingPhoto) {
+            photoId = existingPhoto.id;
+        }
+        else {
+            const createdPhoto = await prisma.image.create({
+                data: { url: data.photo },
+            });
+            photoId = createdPhoto.id;
+        }
+    }
     const user = await prisma.user.update({
         where: { id },
         data: {
             name: data.name,
             email: data.email,
             googleId: data.googleId,
-            photo: data.photo,
+            photoId,
+        },
+        include: {
+            photo: true,
         },
     });
     return user;

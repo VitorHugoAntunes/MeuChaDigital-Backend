@@ -15,10 +15,11 @@ datasource db {
 
 model User {
   id            String         @id @default(uuid()) @db.Uuid
-  googleId      String?         @unique
+  googleId      String?        @unique
   name          String?
   email         String?        @unique
-  photo         String?
+  photoId       String?        @db.Uuid
+  photo         Image?         @relation(fields: [photoId], references: [id])
   isGuest       Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -28,16 +29,43 @@ model User {
 }
 
 model GiftList {
-  id          String         @id @default(uuid()) @db.Uuid
-  name        String
-  description String?
-  banner      String?
-  userId      String         @db.Uuid
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  status      GiftListStatus
-  gifts       Gift[]
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String
+  slug          String         @unique
+  type          GiftListType
+  description   String?
+  bannerId      String?        @unique @db.Uuid
+  banner        Image?         @relation(name: "BannerImage", fields: [bannerId], references: [id])
+  momentsImages Image[]        @relation(name: "MomentsImages")
+  userId        String         @db.Uuid
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shareableLink String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  status        GiftListStatus
+  gifts         Gift[]
+
+  Invitee Invitee[]
+}
+
+enum GiftListType {
+  BIRTHDAY
+  WEDDING
+  BABY_SHOWER
+}
+
+model Image {
+  id        String   @id @default(uuid()) @db.Uuid
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User[]
+  gift Gift[]
+
+  giftListId        String?   @db.Uuid
+  bannerForGiftList GiftList? @relation(name: "BannerImage")
+  giftList          GiftList? @relation(name: "MomentsImages", fields: [giftListId], references: [id])
 }
 
 enum GiftListStatus {
@@ -50,15 +78,38 @@ model Gift {
   name          String
   description   String?
   totalValue    Float
-  photo         String
-  giftShares    Int
-  valuePerShare Float
+  priority      GiftPriority
+  photoId       String?        @db.Uuid
+  photo         Image?         @relation(fields: [photoId], references: [id])
   giftListId    String         @db.Uuid
   list          GiftList       @relation(fields: [giftListId], references: [id], onDelete: Cascade)
   contributions Contribution[]
   categoryId    String         @db.Uuid
   category      Category       @relation(fields: [categoryId], references: [id])
   charges       Charge[]
+}
+
+enum GiftPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Invitee {
+  id         String        @id @default(uuid()) @db.Uuid
+  phone      String
+  name       String
+  email      String
+  giftListId String        @db.Uuid
+  giftList   GiftList      @relation(fields: [giftListId], references: [id])
+  status     InviteeStatus
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+enum InviteeStatus {
+  ACCEPTED
+  REJECTED
 }
 
 model Category {
@@ -109,7 +160,7 @@ model Payment {
   paymentMethod  String
   pixKey         String
   paymentDate    DateTime?
-  contributionId String        @unique @db.Uuid // Alterado para @db.Uuid
+  contributionId String        @unique @db.Uuid
   contribution   Contribution  @relation(fields: [contributionId], references: [id])
 }
 

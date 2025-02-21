@@ -10,17 +10,30 @@ const createUser = async (data: UserCreate) => {
     return existingUser;
   }
 
+  let photoId = undefined;
+
+  if (data.photo) {
+    const createdPhoto = await prisma.image.create({
+      data: { url: data.photo },
+    });
+    photoId = createdPhoto.id;
+  }
+
   const user = await prisma.user.create({
     data: {
       name: data.name,
       email: data.email,
       googleId: data.googleId,
-      photo: data.photo,
+      photoId,
+    },
+    include: {
+      photo: true,
     },
   });
 
   return user;
 };
+
 
 const createGuestUser = async (data: GuestUserCreate) => {
   const user = await prisma.user.create({
@@ -49,18 +62,39 @@ const getUserById = async (id: string) => {
 }
 
 const updateUser = async (id: string, data: UserCreate) => {
+  let photoId = undefined;
+
+  if (data.photo) {
+    const existingPhoto = await prisma.image.findFirst({
+      where: { url: data.photo },
+    });
+
+    if (existingPhoto) {
+      photoId = existingPhoto.id;
+    } else {
+      const createdPhoto = await prisma.image.create({
+        data: { url: data.photo },
+      });
+      photoId = createdPhoto.id;
+    }
+  }
+
   const user = await prisma.user.update({
     where: { id },
     data: {
       name: data.name,
       email: data.email,
       googleId: data.googleId,
-      photo: data.photo,
+      photoId,
+    },
+    include: {
+      photo: true,
     },
   });
 
   return user;
-}
+};
+
 
 const deleteUser = async (id: string) => {
 

@@ -3,95 +3,150 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createGiftList = async (data) => {
+    let bannerId = undefined;
+    if (data.banner) {
+        const createdBanner = await prisma.image.create({
+            data: { url: data.banner },
+        });
+        bannerId = createdBanner.id;
+    }
+    let momentsImages = undefined;
+    if (data.moments_images && data.moments_images.length > 0) {
+        const createdImages = await Promise.all(data.moments_images.map(async (url) => {
+            const createdImage = await prisma.image.create({ data: { url } });
+            return { id: createdImage.id };
+        }));
+        momentsImages = { connect: createdImages };
+    }
     const giftList = await prisma.giftList.create({
         data: {
             name: data.name,
+            slug: data.slug,
+            type: data.type,
             description: data.description,
-            banner: data.banner,
+            bannerId,
+            momentsImages,
+            shareableLink: data.shareableLink ?? '',
             userId: data.userId,
             status: data.status,
             gifts: {
                 create: data.gifts,
             },
         },
+        include: {
+            banner: true,
+            momentsImages: true,
+            gifts: true,
+        },
     });
     return giftList;
 };
 const getAllGiftLists = async () => {
-    const giftLists = await prisma.giftList.findMany();
-    return giftLists;
+    return await prisma.giftList.findMany({
+        include: { banner: true, momentsImages: true },
+    });
 };
 const getGiftListById = async (id) => {
-    const giftList = await prisma.giftList.findUnique({ where: { id } });
-    return giftList;
+    return await prisma.giftList.findUnique({
+        where: { id },
+        include: { banner: true, momentsImages: true },
+    });
 };
 const createGift = async (data) => {
+    let photoId = undefined;
+    if (data.photo) {
+        const createdPhoto = await prisma.image.create({
+            data: { url: data.photo },
+        });
+        photoId = createdPhoto.id;
+    }
     const gift = await prisma.gift.create({
         data: {
             name: data.name,
             description: data.description,
-            photo: data.photo,
+            priority: data.priority,
             totalValue: data.totalValue,
-            giftShares: data.giftShares,
-            valuePerShare: data.valuePerShare,
             giftListId: data.giftListId,
             categoryId: data.categoryId,
+            photoId,
         },
+        include: { photo: true },
     });
     return gift;
 };
 const getAllGifts = async () => {
-    const gifts = await prisma.gift.findMany();
-    return gifts;
+    return await prisma.gift.findMany({ include: { photo: true } });
 };
 const getGiftById = async (id) => {
-    const gift = await prisma.gift.findUnique({ where: { id } });
-    return gift;
+    return await prisma.gift.findUnique({
+        where: { id },
+        include: { photo: true },
+    });
 };
 const updateGiftList = async (id, data) => {
+    let bannerId = undefined;
+    if (data.banner) {
+        const createdBanner = await prisma.image.create({
+            data: { url: data.banner },
+        });
+        bannerId = createdBanner.id;
+    }
     const giftList = await prisma.giftList.update({
         where: { id },
         data: {
             name: data.name,
             description: data.description,
-            banner: data.banner,
+            bannerId,
             userId: data.userId,
             status: data.status,
         },
+        include: { banner: true, momentsImages: true },
     });
     return giftList;
 };
 const updateGift = async (id, data) => {
+    let photoId = undefined;
+    if (data.photo) {
+        const createdPhoto = await prisma.image.create({
+            data: { url: data.photo },
+        });
+        photoId = createdPhoto.id;
+    }
     const gift = await prisma.gift.update({
         where: { id },
         data: {
             name: data.name,
             description: data.description,
-            photo: data.photo,
             totalValue: data.totalValue,
-            giftShares: data.giftShares,
-            valuePerShare: data.valuePerShare,
             giftListId: data.giftListId,
             categoryId: data.categoryId,
+            photoId,
         },
+        include: { photo: true },
     });
     return gift;
 };
 const deleteGiftList = async (id) => {
     const giftList = await prisma.giftList.findUnique({ where: { id } });
-    if (!giftList) {
+    if (!giftList)
         return null;
-    }
     if (giftList.status === 'ACTIVE') {
         throw new Error('Não é possível deletar uma lista de presentes ativa.');
     }
-    else {
-        const giftList = await prisma.giftList.delete({ where: { id } });
-        return giftList;
-    }
+    return await prisma.giftList.delete({ where: { id } });
 };
 const deleteGift = async (id) => {
-    const gift = await prisma.gift.delete({ where: { id } });
-    return gift;
+    return await prisma.gift.delete({ where: { id } });
 };
-exports.default = { createGiftList, getAllGiftLists, getGiftListById, createGift, getAllGifts, getGiftById, updateGiftList, updateGift, deleteGiftList, deleteGift };
+exports.default = {
+    createGiftList,
+    getAllGiftLists,
+    getGiftListById,
+    createGift,
+    getAllGifts,
+    getGiftById,
+    updateGiftList,
+    updateGift,
+    deleteGiftList,
+    deleteGift,
+};

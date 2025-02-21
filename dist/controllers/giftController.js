@@ -10,8 +10,8 @@ const giftValidator_1 = require("../validators/giftValidator");
 const zod_1 = require("zod");
 const createGiftList = async (req, res) => {
     try {
-        const { name, description, banner, userId, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
-        const giftList = await giftService_1.default.createGiftList({ name, description, banner, userId, status, gifts });
+        const { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
+        const giftList = await giftService_1.default.createGiftList({ name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts: gifts || [] });
         res.status(201).json(giftList); // Envia a resposta manualmente
     }
     catch (error) {
@@ -42,8 +42,8 @@ const getGiftListById = async (req, res) => {
 exports.getGiftListById = getGiftListById;
 const createGift = async (req, res) => {
     try {
-        const { name, description, photo, totalValue, giftShares, valuePerShare, categoryId, giftListId } = giftValidator_1.createGiftSchema.parse(req.body);
-        const gift = await giftService_1.default.createGift({ name, description, photo, totalValue, giftShares, valuePerShare, categoryId, giftListId });
+        const { name, priority, description, photo, totalValue, categoryId, giftListId } = giftValidator_1.createGiftSchema.parse(req.body);
+        const gift = await giftService_1.default.createGift({ name, priority, description, photo, totalValue, categoryId, giftListId });
         res.status(201).json(gift);
     }
     catch (error) {
@@ -75,11 +75,8 @@ exports.getGiftById = getGiftById;
 const updateGiftList = async (req, res) => {
     const id = req.params.giftId;
     try {
-        const { name, description, banner, userId, status } = giftListValidator_1.createGiftListSchema.parse(req.body);
-        const giftList = await giftService_1.default.updateGiftList(id, {
-            name, description, banner, userId, status,
-            gifts: []
-        });
+        const { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
+        const giftList = await giftService_1.default.updateGiftList(id, { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts: gifts || [] });
         res.json(giftList);
     }
     catch (error) {
@@ -95,10 +92,8 @@ exports.updateGiftList = updateGiftList;
 const updateGift = async (req, res) => {
     const id = req.params.giftId;
     try {
-        const { name, description, photo, totalValue, giftShares, valuePerShare, categoryId, giftListId } = giftValidator_1.createGiftSchema.parse(req.body);
-        const gift = await giftService_1.default.updateGift(id, {
-            name, description, photo, totalValue, giftShares, valuePerShare, categoryId, giftListId
-        });
+        const { name, priority, description, photo, totalValue, categoryId, giftListId } = giftValidator_1.createGiftSchema.parse(req.body);
+        const gift = await giftService_1.default.updateGift(id, { name, priority, description, photo, totalValue, categoryId, giftListId });
         res.json(gift);
     }
     catch (error) {
