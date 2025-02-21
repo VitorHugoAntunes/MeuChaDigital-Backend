@@ -74,7 +74,7 @@ export const getAllGifts = async (req: Request, res: Response) => {
 };
 
 export const getGiftById = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = req.params.giftId;
   const gift = await UserService.getGiftById(id);
   if (gift) {
     res.json(gift);
@@ -84,7 +84,7 @@ export const getGiftById = async (req: Request, res: Response) => {
 };
 
 export const updateGiftList = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = req.params.giftId;
   try {
     const { name, description, banner, userId, status } = createGiftListSchema.parse(req.body);
     const giftList = await UserService.updateGiftList(id, {
@@ -102,7 +102,7 @@ export const updateGiftList = async (req: Request, res: Response) => {
 };
 
 export const updateGift = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = req.params.giftId;
   try {
     const { name, description, photo, totalValue, giftShares, valuePerShare, categoryId, giftListId } = createGiftSchema.parse(req.body);
     const gift = await UserService.updateGift(id, {
@@ -119,7 +119,7 @@ export const updateGift = async (req: Request, res: Response) => {
 };
 
 export const deleteGiftList = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = req.params.giftId;
   try {
     const giftList = await UserService.deleteGiftList(id);
     if (giftList) {

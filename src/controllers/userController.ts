@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import UserService from '../services/userService';
-import { createUserSchema } from '../validators/userValidator';
+import { createUserSchema, createGuestUserSchema } from '../validators/userValidator';
 import { ZodError } from 'zod';
 
 interface CreateUserParams {
@@ -10,11 +10,29 @@ interface CreateUserParams {
   photo: string;
 }
 
+interface CreateGuestUserParams {
+  isGuest: boolean;
+}
+
 export const createUser = async (params: CreateUserParams) => {
   try {
     const { name, email, googleId, photo } = createUserSchema.parse(params);
     const user = await UserService.createUser({ name, email, googleId, photo });
     return user; // Retorna o usuário criado
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new Error('Erro de validação: ' + error.errors.map(e => e.message).join(', '));
+    } else {
+      throw new Error('Erro ao criar usuário: ' + (error as Error).message);
+    }
+  }
+};
+
+export const createGuestUser = async (params: CreateGuestUserParams) => {
+  try {
+    const { isGuest } = createGuestUserSchema.parse(params);
+    const user = await UserService.createGuestUser({ isGuest });
+    return user;
   } catch (error) {
     if (error instanceof ZodError) {
       throw new Error('Erro de validação: ' + error.errors.map(e => e.message).join(', '));

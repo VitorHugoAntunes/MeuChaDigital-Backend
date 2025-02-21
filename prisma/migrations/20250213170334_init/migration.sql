@@ -58,9 +58,30 @@ CREATE TABLE "Category" (
 );
 
 -- CreateTable
+CREATE TABLE "Charge" (
+    "id" UUID NOT NULL,
+    "localId" TEXT NOT NULL,
+    "txId" TEXT NOT NULL,
+    "giftId" UUID NOT NULL,
+    "value" DOUBLE PRECISION NOT NULL,
+    "paymentMethod" TEXT NOT NULL,
+    "pixKey" TEXT NOT NULL,
+    "pixCopyAndPaste" TEXT NOT NULL,
+    "qrCode" TEXT NOT NULL,
+    "generatedAt" TIMESTAMP(3) NOT NULL,
+    "expirationDate" TIMESTAMP(3) NOT NULL,
+    "paymentDate" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Charge_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Contribution" (
     "id" UUID NOT NULL,
     "value" DOUBLE PRECISION NOT NULL,
+    "message" TEXT,
     "giftId" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -91,16 +112,19 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Payment_contributionId_key" ON "Payment"("contributionId");
 
 -- AddForeignKey
-ALTER TABLE "GiftList" ADD CONSTRAINT "GiftList_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "GiftList" ADD CONSTRAINT "GiftList_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Gift" ADD CONSTRAINT "Gift_giftListId_fkey" FOREIGN KEY ("giftListId") REFERENCES "GiftList"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Gift" ADD CONSTRAINT "Gift_giftListId_fkey" FOREIGN KEY ("giftListId") REFERENCES "GiftList"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Gift" ADD CONSTRAINT "Gift_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Contribution" ADD CONSTRAINT "Contribution_giftId_fkey" FOREIGN KEY ("giftId") REFERENCES "Gift"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Charge" ADD CONSTRAINT "Charge_giftId_fkey" FOREIGN KEY ("giftId") REFERENCES "Gift"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Contribution" ADD CONSTRAINT "Contribution_giftId_fkey" FOREIGN KEY ("giftId") REFERENCES "Gift"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Contribution" ADD CONSTRAINT "Contribution_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

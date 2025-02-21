@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.getUserById = exports.getUserByEmail = exports.getAllUsers = exports.createUser = void 0;
+exports.deleteUser = exports.updateUser = exports.getUserById = exports.getUserByEmail = exports.getAllUsers = exports.createGuestUser = exports.createUser = void 0;
 const userService_1 = __importDefault(require("../services/userService"));
 const userValidator_1 = require("../validators/userValidator");
 const zod_1 = require("zod");
@@ -23,6 +23,22 @@ const createUser = async (params) => {
     }
 };
 exports.createUser = createUser;
+const createGuestUser = async (params) => {
+    try {
+        const { isGuest } = userValidator_1.createGuestUserSchema.parse(params);
+        const user = await userService_1.default.createGuestUser({ isGuest });
+        return user;
+    }
+    catch (error) {
+        if (error instanceof zod_1.ZodError) {
+            throw new Error('Erro de validação: ' + error.errors.map(e => e.message).join(', '));
+        }
+        else {
+            throw new Error('Erro ao criar usuário: ' + error.message);
+        }
+    }
+};
+exports.createGuestUser = createGuestUser;
 const getAllUsers = async (req, res) => {
     const users = await userService_1.default.getAllUsers();
     res.json(users);

@@ -6,3 +6,7 @@ export const createUserSchema = z.object({
   googleId: z.string().min(3, 'O Google ID está inválido'),
   photo: z.string().optional(),
 });
+
+export const createGuestUserSchema = z.object({
+  isGuest: z.boolean(),
+});

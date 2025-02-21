@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { UserCreate } from '../models/userModel';
+import { UserCreate, GuestUserCreate } from '../models/userModel';
 
 const prisma = new PrismaClient();
 
@@ -21,6 +21,17 @@ const createUser = async (data: UserCreate) => {
 
   return user;
 };
+
+const createGuestUser = async (data: GuestUserCreate) => {
+  const user = await prisma.user.create({
+    data: {
+      isGuest: true,
+    },
+  });
+
+  return user;
+};
+
 
 const getAllUsers = async () => {
   const users = await prisma.user.findMany();
@@ -66,4 +77,4 @@ const deleteUser = async (id: string) => {
   return user;
 }
 
-export default { createUser, getAllUsers, getUserByEmail, getUserById, updateUser, deleteUser };
+export default { createUser, createGuestUser, getAllUsers, getUserByEmail, getUserById, updateUser, deleteUser };

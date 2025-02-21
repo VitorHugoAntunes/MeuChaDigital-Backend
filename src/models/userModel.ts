@@ -9,8 +9,6 @@ export interface User {
   photo?: string;
   createdAt: Date;
   updatedAt: Date;
-  // lista: GiftList[];
-  // contributions: Contribution[];
 }
 
 export interface UserCreate {
@@ -19,3 +17,8 @@ export interface UserCreate {
   email: string;
   photo?: string;
 }
+
+export interface GuestUserCreate {
+  isGuest: boolean;
+}
+

@@ -15,14 +15,16 @@ datasource db {
 
 model User {
   id            String         @id @default(uuid()) @db.Uuid
-  googleId      String         @unique
-  name          String
-  email         String         @unique
+  googleId      String?         @unique
+  name          String?
+  email         String?        @unique
   photo         String?
+  isGuest       Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   list          GiftList[]
   contributions Contribution[]
+  charges       Charge[] // Cobrancas geradas para este usuário pagar
 }
 
 model GiftList {
@@ -56,6 +58,7 @@ model Gift {
   contributions Contribution[]
   categoryId    String         @db.Uuid
   category      Category       @relation(fields: [categoryId], references: [id])
+  charges       Charge[]
 }
 
 model Category {
@@ -67,9 +70,30 @@ model Category {
   gifts       Gift[]
 }
 
+model Charge {
+  id              String    @id @default(uuid()) @db.Uuid
+  localId         String
+  txId            String
+  giftId          String    @db.Uuid
+  gift            Gift      @relation(fields: [giftId], references: [id], onDelete: SetNull)
+  payerId         String    @db.Uuid
+  payer           User      @relation(fields: [payerId], references: [id])
+  value           Float
+  paymentMethod   String
+  pixKey          String
+  pixCopyAndPaste String
+  qrCode          String
+  generatedAt     DateTime
+  expirationDate  DateTime
+  paymentDate     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
 model Contribution {
   id        String   @id @default(uuid()) @db.Uuid
   value     Float
+  message   String?
   giftId    String   @db.Uuid
   userId    String   @db.Uuid
   gift      Gift     @relation(fields: [giftId], references: [id], onDelete: SetNull)
@@ -83,7 +107,7 @@ model Payment {
   id             String        @id @default(uuid()) @db.Uuid
   status         PaymentStatus
   paymentMethod  String
-  qrCodePix      String?
+  pixKey         String
   paymentDate    DateTime?
   contributionId String        @unique @db.Uuid // Alterado para @db.Uuid
   contribution   Contribution  @relation(fields: [contributionId], references: [id])

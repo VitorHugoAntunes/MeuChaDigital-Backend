@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import giftRoutes from './routes/giftRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import { createContribution } from './controllers/contributionController'
 import { isLoggedIn } from './middlewares/authMiddleware';
 import './config/passport';
 
@@ -21,24 +22,35 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use((req, res, next) => {
-  if (req.path === '/' || req.path.startsWith('/auth') || req.path.startsWith('/payment/webhook') || req.path.startsWith('/test-webhook')) {
-    return next();
+  const isListRoute = req.path.startsWith("/list") || req.path.startsWith("/list/");
+  const isUsersRoute = req.path.startsWith("/users");
+
+  if (
+    (isListRoute && req.method !== "GET") || // Exige autenticação para métodos não-GET em /list
+    isUsersRoute && req.method !== "GET" // Exige autenticação para todos os métodos não-GET em /users
+  ) {
+    isLoggedIn(req, res, next);
+  } else {
+    next(); // Continua a execução normalmente se não for uma rota protegida
   }
-  isLoggedIn(req, res, next);
 });
 
 app.use(express.json());
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
-app.use('/list', giftRoutes);
-app.use('/payment', paymentRoutes);
+app.use('/lists', giftRoutes);
+app.use('/payments', paymentRoutes);
 
-app.post('/test-webhook(/pix)?', (req: Request, res: Response) => {
-  console.log(req.body);
-  console.log(req.headers);
-  res.send('Webhook recebido');
-  res.status(200);
+app.post('/test-webhook(/pix)?', async (req: Request, res: Response) => {
+  try {
+    console.log('Webhook de pagamento recebido');
+    console.log(req.body);
+
+    await createContribution(req, res);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao processar o webhook: ' + (error as Error).message });
+  }
 });
 
 app.get('/', (_req, res) => {
@@ -49,3 +61,4 @@ app.get('/protected', (_req, res) => {
 });
 
 export default app;
+

@@ -40,6 +40,6 @@ router.post('/webhook(/pix)?', (req: Request, res: Response) => {
   }
 });
 
-router.post('/charge', createCharge);
+router.post('/charges', createCharge);
 
 export default router;

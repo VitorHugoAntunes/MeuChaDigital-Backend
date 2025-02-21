@@ -34,5 +34,5 @@ router.post('/webhook(/pix)?', (req, res) => {
         res.status(500).json({ error: "Erro interno ao processar o webhook." }); // No `return` here
     }
 });
-router.post('/charge', paymentController_1.createCharge);
+router.post('/charges', paymentController_1.createCharge);
 exports.default = router;
