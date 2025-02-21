@@ -82,13 +82,7 @@ const getGiftListById = async (id: string) => {
 };
 
 const createGift = async (data: GiftCreate) => {
-  let createdPhoto = null;
-
-  if (data.photo) {
-    createdPhoto = await prisma.image.create({
-      data: { url: data.photo },
-    });
-  }
+  let photo = null;
 
   const gift = await prisma.gift.create({
     data: {
@@ -98,20 +92,34 @@ const createGift = async (data: GiftCreate) => {
       totalValue: data.totalValue,
       giftListId: data.giftListId,
       categoryId: data.categoryId,
-      photoId: createdPhoto?.id,
     },
     include: { photo: true },
   });
 
-  if (createdPhoto) {
+  if (data.photo) {
+    photo = await prisma.image.create({
+      data: { url: data.photo },
+    });
+  }
+
+  if (photo) {
+    await prisma.gift.update({
+      where: { id: gift.id },
+      data: {
+        photoId: photo.id,
+      },
+    });
+
     await prisma.image.update({
-      where: { id: createdPhoto.id },
-      data: { giftId: gift.id },
+      where: { id: photo.id },
+      data: {
+        giftId: gift.id,
+      },
     });
   }
 
   return gift;
-};
+}
 
 const getAllGifts = async () => {
   return await prisma.gift.findMany({ include: { photo: true } });

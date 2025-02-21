@@ -7,29 +7,34 @@ const createUser = async (data) => {
     if (existingUser) {
         return existingUser;
     }
-    let photoId = undefined;
-    let createdPhoto = undefined;
-    if (data.photo) {
-        createdPhoto = await prisma.image.create({
-            data: { url: data.photo },
-        });
-        photoId = createdPhoto.id;
-    }
+    let photo = null;
     const user = await prisma.user.create({
         data: {
             name: data.name,
             email: data.email,
             googleId: data.googleId,
-            photoId,
         },
         include: {
             photo: true,
         },
     });
-    if (createdPhoto) {
+    if (data.photo) {
+        photo = await prisma.image.create({
+            data: { url: data.photo },
+        });
+    }
+    if (photo) {
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                photoId: photo.id,
+            },
+        });
         await prisma.image.update({
-            where: { id: createdPhoto.id },
-            data: { userId: user.id },
+            where: { id: photo.id },
+            data: {
+                userId: user.id,
+            },
         });
     }
     return user;
