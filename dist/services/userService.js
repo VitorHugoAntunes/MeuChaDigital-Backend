@@ -3,14 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createUser = async (data) => {
-    console.log("DADOS QUE VEM DA CRIACAO DO USUARIO", data);
     const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
     if (existingUser) {
         return existingUser;
     }
     let photoId = undefined;
+    let createdPhoto = undefined;
     if (data.photo) {
-        const createdPhoto = await prisma.image.create({
+        createdPhoto = await prisma.image.create({
             data: { url: data.photo },
         });
         photoId = createdPhoto.id;
@@ -26,6 +26,12 @@ const createUser = async (data) => {
             photo: true,
         },
     });
+    if (createdPhoto) {
+        await prisma.image.update({
+            where: { id: createdPhoto.id },
+            data: { userId: user.id },
+        });
+    }
     return user;
 };
 const createGuestUser = async (data) => {

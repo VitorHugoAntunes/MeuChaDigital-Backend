@@ -31,7 +31,6 @@ passport_1.default.use(new passport_google_oauth2_1.Strategy({
             photo: profile.picture,
         };
         if (_req.res) {
-            console.log("Criando usuario pelo google", userParams);
             const user = await (0, userController_1.createUser)(userParams);
             return done(null, user);
         }

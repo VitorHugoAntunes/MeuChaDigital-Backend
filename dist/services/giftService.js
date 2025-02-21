@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createGiftList = async (data) => {
-    // Criando a lista de presentes primeiro
     const giftList = await prisma.giftList.create({
         data: {
             name: data.name,
@@ -23,24 +22,22 @@ const createGiftList = async (data) => {
         },
     });
     let bannerId = undefined;
-    // Criando a imagem do banner, associando corretamente à giftList
     if (data.banner) {
         const createdBanner = await prisma.image.create({
             data: {
                 url: data.banner,
-                giftListId: giftList.id, // Agora associando corretamente
+                giftListId: giftList.id,
             },
         });
         bannerId = createdBanner.id;
     }
     let momentsImages = undefined;
-    // Criando imagens de momentos, associando corretamente à giftList
     if (data.moments_images && data.moments_images.length > 0) {
         const createdImages = await Promise.all(data.moments_images.map(async (url) => {
             return prisma.image.create({
                 data: {
                     url,
-                    giftListId: giftList.id, // Associando corretamente
+                    giftListId: giftList.id,
                 },
             });
         }));
@@ -72,12 +69,11 @@ const getGiftListById = async (id) => {
     });
 };
 const createGift = async (data) => {
-    let photoId = undefined;
+    let createdPhoto = null;
     if (data.photo) {
-        const createdPhoto = await prisma.image.create({
+        createdPhoto = await prisma.image.create({
             data: { url: data.photo },
         });
-        photoId = createdPhoto.id;
     }
     const gift = await prisma.gift.create({
         data: {
@@ -87,10 +83,16 @@ const createGift = async (data) => {
             totalValue: data.totalValue,
             giftListId: data.giftListId,
             categoryId: data.categoryId,
-            photoId,
+            photoId: createdPhoto?.id,
         },
         include: { photo: true },
     });
+    if (createdPhoto) {
+        await prisma.image.update({
+            where: { id: createdPhoto.id },
+            data: { giftId: gift.id },
+        });
+    }
     return gift;
 };
 const getAllGifts = async () => {
