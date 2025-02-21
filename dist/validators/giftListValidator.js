@@ -6,6 +6,7 @@ exports.createGiftListSchema = zod_1.z.object({
     name: zod_1.z.string().min(3, 'O título deve ter pelo menos 3 caracteres'),
     slug: zod_1.z.string().min(3, 'O slug deve ter pelo menos 3 caracteres'),
     type: zod_1.z.enum(['WEDDING', 'BIRTHDAY', 'BABY_SHOWER']),
+    eventDate: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'A data do evento está inválida'),
     description: zod_1.z.string().min(3, 'A descrição deve ter pelo menos 3 caracteres'),
     banner: zod_1.z.string().url('A URL do banner está inválida').optional(),
     moments_images: zod_1.z.array(zod_1.z.string().url('A URL da imagem está inválida')).optional(),

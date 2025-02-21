@@ -25,6 +25,7 @@ export interface GiftList {
   name: string;
   slug: string;
   type: "WEDDING" | "BIRTHDAY" | "BABY_SHOWER";
+  eventDate: string;
   description?: string;
   banner?: string;
   moments_images?: string[];
@@ -40,6 +41,7 @@ export interface GiftListCreate {
   name: string;
   slug: string;
   type: "WEDDING" | "BIRTHDAY" | "BABY_SHOWER";
+  eventDate: string;
   description?: string;
   banner?: string;
   moments_images?: string[];

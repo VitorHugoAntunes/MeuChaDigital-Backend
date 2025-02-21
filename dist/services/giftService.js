@@ -3,29 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createGiftList = async (data) => {
-    let bannerId = undefined;
-    if (data.banner) {
-        const createdBanner = await prisma.image.create({
-            data: { url: data.banner },
-        });
-        bannerId = createdBanner.id;
-    }
-    let momentsImages = undefined;
-    if (data.moments_images && data.moments_images.length > 0) {
-        const createdImages = await Promise.all(data.moments_images.map(async (url) => {
-            const createdImage = await prisma.image.create({ data: { url } });
-            return { id: createdImage.id };
-        }));
-        momentsImages = { connect: createdImages };
-    }
+    // Criando a lista de presentes primeiro
     const giftList = await prisma.giftList.create({
         data: {
             name: data.name,
             slug: data.slug,
             type: data.type,
+            eventDate: new Date(data.eventDate),
             description: data.description,
-            bannerId,
-            momentsImages,
             shareableLink: data.shareableLink ?? '',
             userId: data.userId,
             status: data.status,
@@ -34,12 +19,46 @@ const createGiftList = async (data) => {
             },
         },
         include: {
+            gifts: true,
+        },
+    });
+    let bannerId = undefined;
+    // Criando a imagem do banner, associando corretamente à giftList
+    if (data.banner) {
+        const createdBanner = await prisma.image.create({
+            data: {
+                url: data.banner,
+                giftListId: giftList.id, // Agora associando corretamente
+            },
+        });
+        bannerId = createdBanner.id;
+    }
+    let momentsImages = undefined;
+    // Criando imagens de momentos, associando corretamente à giftList
+    if (data.moments_images && data.moments_images.length > 0) {
+        const createdImages = await Promise.all(data.moments_images.map(async (url) => {
+            return prisma.image.create({
+                data: {
+                    url,
+                    giftListId: giftList.id, // Associando corretamente
+                },
+            });
+        }));
+        momentsImages = { connect: createdImages.map((img) => ({ id: img.id })) };
+    }
+    const updatedGiftList = await prisma.giftList.update({
+        where: { id: giftList.id },
+        data: {
+            bannerId,
+            momentsImages,
+        },
+        include: {
             banner: true,
             momentsImages: true,
             gifts: true,
         },
     });
-    return giftList;
+    return updatedGiftList;
 };
 const getAllGiftLists = async () => {
     return await prisma.giftList.findMany({

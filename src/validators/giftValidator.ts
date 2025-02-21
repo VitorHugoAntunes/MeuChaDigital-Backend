@@ -6,8 +6,6 @@ export const createGiftSchema = z.object({
   description: z.string().min(3, 'A descrição deve ter pelo menos 3 caracteres'),
   photo: z.string().url('A URL da foto está inválida'),
   totalValue: z.number().positive('O valor total deve ser positivo'),
-  giftShares: z.number().int().positive('O número de cotas deve ser positivo'),
-  valuePerShare: z.number().positive('O valor por cota deve ser positivo'),
   categoryId: z.string().min(3, 'O ID da categoria está inválido'),
   giftListId: z.string().min(3, 'O ID da lista de presentes está inválido'),
 });

@@ -18,14 +18,14 @@ model User {
   googleId      String?        @unique
   name          String?
   email         String?        @unique
-  photoId       String?        @db.Uuid
+  photoId       String?        @unique @db.Uuid
   photo         Image?         @relation(fields: [photoId], references: [id])
   isGuest       Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   list          GiftList[]
   contributions Contribution[]
-  charges       Charge[] // Cobrancas geradas para este usuário pagar
+  charges       Charge[] // Cobranças geradas para este usuário pagar
 }
 
 model GiftList {
@@ -33,6 +33,7 @@ model GiftList {
   name          String
   slug          String         @unique
   type          GiftListType
+  eventDate     DateTime
   description   String?
   bannerId      String?        @unique @db.Uuid
   banner        Image?         @relation(name: "BannerImage", fields: [bannerId], references: [id])
@@ -44,8 +45,7 @@ model GiftList {
   updatedAt     DateTime       @updatedAt
   status        GiftListStatus
   gifts         Gift[]
-
-  Invitee Invitee[]
+  invitees      Invitee[]
 }
 
 enum GiftListType {
@@ -60,33 +60,39 @@ model Image {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User[]
-  gift Gift[]
+  userId String? @db.Uuid
+  user   User?
 
   giftListId        String?   @db.Uuid
   bannerForGiftList GiftList? @relation(name: "BannerImage")
   giftList          GiftList? @relation(name: "MomentsImages", fields: [giftListId], references: [id])
+
+  giftId String? @db.Uuid
+  Gift              Gift?
+}
+
+model Gift {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  totalValue  Float
+  priority    GiftPriority
+
+  photoId String? @unique @db.Uuid
+  photo   Image?  @relation(fields: [photoId], references: [id])
+
+  giftListId String   @db.Uuid
+  list       GiftList @relation(fields: [giftListId], references: [id], onDelete: Cascade)
+
+  contributions Contribution[]
+  categoryId    String         @db.Uuid
+  category      Category       @relation(fields: [categoryId], references: [id])
+  charges       Charge[]
 }
 
 enum GiftListStatus {
   ACTIVE
   INACTIVE
-}
-
-model Gift {
-  id            String         @id @default(uuid()) @db.Uuid
-  name          String
-  description   String?
-  totalValue    Float
-  priority      GiftPriority
-  photoId       String?        @db.Uuid
-  photo         Image?         @relation(fields: [photoId], references: [id])
-  giftListId    String         @db.Uuid
-  list          GiftList       @relation(fields: [giftListId], references: [id], onDelete: Cascade)
-  contributions Contribution[]
-  categoryId    String         @db.Uuid
-  category      Category       @relation(fields: [categoryId], references: [id])
-  charges       Charge[]
 }
 
 enum GiftPriority {

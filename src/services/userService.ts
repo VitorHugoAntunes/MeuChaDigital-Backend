@@ -4,6 +4,7 @@ import { UserCreate, GuestUserCreate } from '../models/userModel';
 const prisma = new PrismaClient();
 
 const createUser = async (data: UserCreate) => {
+  console.log("DADOS QUE VEM DA CRIACAO DO USUARIO", data)
   const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
 
   if (existingUser) {

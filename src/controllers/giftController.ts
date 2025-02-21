@@ -25,8 +25,8 @@ interface CreateGiftListParams {
 
 export const createGiftList = async (req: Request, res: Response) => {
   try {
-    const { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts } = createGiftListSchema.parse(req.body);
-    const giftList = await GiftService.createGiftList({ name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts: gifts || [] });
+    const { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts } = createGiftListSchema.parse(req.body);
+    const giftList = await GiftService.createGiftList({ userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts: gifts || [] });
     res.status(201).json(giftList);
   } catch (error) {
     if (error instanceof ZodError) {
@@ -84,8 +84,8 @@ export const getGiftById = async (req: Request, res: Response) => {
 export const updateGiftList = async (req: Request, res: Response) => {
   const id = req.params.giftId;
   try {
-    const { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts } = createGiftListSchema.parse(req.body);
-    const giftList = await GiftService.updateGiftList(id, { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts: gifts || [] });
+    const { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts } = createGiftListSchema.parse(req.body);
+    const giftList = await GiftService.updateGiftList(id, { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts: gifts || [] });
     res.json(giftList);
   } catch (error) {
     if (error instanceof ZodError) {

@@ -10,9 +10,9 @@ const giftValidator_1 = require("../validators/giftValidator");
 const zod_1 = require("zod");
 const createGiftList = async (req, res) => {
     try {
-        const { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
-        const giftList = await giftService_1.default.createGiftList({ name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts: gifts || [] });
-        res.status(201).json(giftList); // Envia a resposta manualmente
+        const { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
+        const giftList = await giftService_1.default.createGiftList({ userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts: gifts || [] });
+        res.status(201).json(giftList);
     }
     catch (error) {
         if (error instanceof zod_1.ZodError) {
@@ -75,8 +75,8 @@ exports.getGiftById = getGiftById;
 const updateGiftList = async (req, res) => {
     const id = req.params.giftId;
     try {
-        const { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
-        const giftList = await giftService_1.default.updateGiftList(id, { name, slug, type, moments_images, shareableLink, description, banner, userId, status, gifts: gifts || [] });
+        const { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
+        const giftList = await giftService_1.default.updateGiftList(id, { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts: gifts || [] });
         res.json(giftList);
     }
     catch (error) {

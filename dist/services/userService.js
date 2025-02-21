@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createUser = async (data) => {
+    console.log("DADOS QUE VEM DA CRIACAO DO USUARIO", data);
     const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
     if (existingUser) {
         return existingUser;
