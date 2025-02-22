@@ -8,6 +8,8 @@ const createInvitee = async (data) => {
             name: data.name,
             phone: data.phone,
             email: data.email,
+            additionalInvitees: data.additionalInvitees,
+            observation: data.observation,
             giftList: { connect: { id: data.giftListId } },
             status: data.status,
         },
