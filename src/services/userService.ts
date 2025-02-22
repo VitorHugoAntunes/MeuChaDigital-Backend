@@ -26,7 +26,7 @@ const createUser = async (data: UserCreate) => {
 
   if (data.photo) {
     photo = await prisma.image.create({
-      data: { url: data.photo },
+      data: { url: data.photo, type: 'AVATAR' },
     });
   }
 
@@ -88,7 +88,7 @@ const updateUser = async (id: string, data: UserCreate) => {
       photoId = existingPhoto.id;
     } else {
       const createdPhoto = await prisma.image.create({
-        data: { url: data.photo },
+        data: { url: data.photo, type: 'AVATAR' },
       });
       photoId = createdPhoto.id;
     }

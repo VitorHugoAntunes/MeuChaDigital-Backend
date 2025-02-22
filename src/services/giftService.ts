@@ -4,7 +4,6 @@ import { GiftListCreate, GiftCreate } from '../models/giftModel';
 const prisma = new PrismaClient();
 
 const createGiftList = async (data: GiftListCreate) => {
-
   const giftList = await prisma.giftList.create({
     data: {
       name: data.name,
@@ -30,7 +29,8 @@ const createGiftList = async (data: GiftListCreate) => {
     const createdBanner = await prisma.image.create({
       data: {
         url: data.banner,
-        giftListId: giftList.id,
+        type: 'BANNER',
+        bannerForGiftListId: giftList.id,
       },
     });
     bannerId = createdBanner.id;
@@ -44,12 +44,16 @@ const createGiftList = async (data: GiftListCreate) => {
         return prisma.image.create({
           data: {
             url,
-            giftListId: giftList.id,
+            type: 'MOMENT',
+            momentsForGiftListId: giftList.id,
           },
         });
       })
     );
-    momentsImages = { connect: createdImages.map((img) => ({ id: img.id })) };
+
+    momentsImages = {
+      connect: createdImages.map((img) => ({ id: img.id })),
+    };
   }
 
   const updatedGiftList = await prisma.giftList.update({
@@ -98,7 +102,7 @@ const createGift = async (data: GiftCreate) => {
 
   if (data.photo) {
     photo = await prisma.image.create({
-      data: { url: data.photo },
+      data: { url: data.photo, type: 'GIFT' },
     });
   }
 
@@ -136,8 +140,23 @@ const updateGiftList = async (id: string, data: GiftListCreate) => {
   let bannerId = undefined;
 
   if (data.banner) {
+    const existingGiftList = await prisma.giftList.findUnique({
+      where: { id },
+      include: { banner: true },
+    });
+
+    if (existingGiftList?.banner) {
+      await prisma.image.delete({
+        where: { id: existingGiftList.banner.id },
+      });
+    }
+
     const createdBanner = await prisma.image.create({
-      data: { url: data.banner },
+      data: {
+        url: data.banner,
+        type: 'BANNER',
+        bannerForGiftListId: id,
+      },
     });
     bannerId = createdBanner.id;
   }
@@ -147,11 +166,14 @@ const updateGiftList = async (id: string, data: GiftListCreate) => {
     data: {
       name: data.name,
       description: data.description,
-      bannerId,
+      bannerId, // Atualiza o bannerId, se um novo banner foi criado
       userId: data.userId,
       status: data.status,
     },
-    include: { banner: true, momentsImages: true },
+    include: {
+      banner: true,
+      momentsImages: true,
+    },
   });
 
   return giftList;
@@ -162,7 +184,7 @@ const updateGift = async (id: string, data: GiftCreate) => {
 
   if (data.photo) {
     const createdPhoto = await prisma.image.create({
-      data: { url: data.photo },
+      data: { url: data.photo, type: 'GIFT' },
     });
     photoId = createdPhoto.id;
   }

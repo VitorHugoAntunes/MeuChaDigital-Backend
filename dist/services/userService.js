@@ -20,7 +20,7 @@ const createUser = async (data) => {
     });
     if (data.photo) {
         photo = await prisma.image.create({
-            data: { url: data.photo },
+            data: { url: data.photo, type: 'AVATAR' },
         });
     }
     if (photo) {
@@ -70,7 +70,7 @@ const updateUser = async (id, data) => {
         }
         else {
             const createdPhoto = await prisma.image.create({
-                data: { url: data.photo },
+                data: { url: data.photo, type: 'AVATAR' },
             });
             photoId = createdPhoto.id;
         }
