@@ -6,8 +6,6 @@ export const createGiftListSchema = z.object({
   type: z.enum(['WEDDING', 'BIRTHDAY', 'BABY_SHOWER']),
   eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'A data do evento está inválida'),
   description: z.string().min(3, 'A descrição deve ter pelo menos 3 caracteres'),
-  banner: z.string().url('A URL do banner está inválida').optional(),
-  moments_images: z.array(z.string().url('A URL da imagem está inválida')).optional(),
   shareableLink: z.string().url('O link compartilhável está inválido').optional(),
   userId: z.string().min(3, 'O ID do usuário está inválido'),
   status: z.enum(['ACTIVE', 'INACTIVE']),

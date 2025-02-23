@@ -3,7 +3,38 @@ import { GiftListCreate, GiftCreate } from '../models/giftModel';
 
 const prisma = new PrismaClient();
 
-const createGiftList = async (data: GiftListCreate) => {
+const createGiftList = async (data: GiftListCreate, req: any, res: any) => {
+
+  let bannerUrl = undefined;
+  let momentsImagesUrls = undefined;
+
+  console.log('ARQUIVOS', req.files);
+  console.log('BANNER', req.files[0]);
+
+  if (req.files && req.files['banner']) {
+    try {
+      bannerUrl = req.files['banner'][0].location; // URL do banner
+      console.log('BANNER URL', bannerUrl);
+    } catch (error) {
+      console.error('Erro ao acessar URL do banner:', error);
+      throw new Error('Erro ao acessar URL do banner');
+    }
+  }
+
+  if (req.files && req.files['moments_images']) {
+    try {
+      momentsImagesUrls = req.files['moments_images'].map((file: any) => file.location);
+      console.log('MOMENTS IMAGES URLS', momentsImagesUrls);
+    } catch (error) {
+      console.error('Erro ao acessar URLs das imagens de momentos:', error);
+      throw new Error('Erro ao acessar URLs das imagens de momentos');
+    }
+  }
+
+  console.log('BANNER URL', bannerUrl);
+  console.log('MOMENTS IMAGES URLS', momentsImagesUrls);
+
+  // Criação da lista de presentes
   const giftList = await prisma.giftList.create({
     data: {
       name: data.name,
@@ -25,10 +56,11 @@ const createGiftList = async (data: GiftListCreate) => {
 
   let bannerId = undefined;
 
-  if (data.banner) {
+  // Criação do banner no banco de dados
+  if (bannerUrl) {
     const createdBanner = await prisma.image.create({
       data: {
-        url: data.banner,
+        url: bannerUrl.toString(),
         type: 'BANNER',
         bannerForGiftListId: giftList.id,
       },
@@ -38,9 +70,10 @@ const createGiftList = async (data: GiftListCreate) => {
 
   let momentsImages = undefined;
 
-  if (data.moments_images && data.moments_images.length > 0) {
+  // Criação das imagens de momentos no banco de dados
+  if (momentsImagesUrls) {
     const createdImages = await Promise.all(
-      data.moments_images.map(async (url) => {
+      momentsImagesUrls.map(async (url: string) => {
         return prisma.image.create({
           data: {
             url,
@@ -56,6 +89,7 @@ const createGiftList = async (data: GiftListCreate) => {
     };
   }
 
+  // Atualização da lista de presentes com o banner e as imagens de momentos
   const updatedGiftList = await prisma.giftList.update({
     where: { id: giftList.id },
     data: {

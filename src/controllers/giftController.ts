@@ -3,6 +3,8 @@ import GiftService from '../services/giftService';
 import { createGiftListSchema } from '../validators/giftListValidator';
 import { createGiftSchema } from '../validators/giftValidator';
 import { ZodError } from 'zod';
+import multer from "multer";
+const upload = multer();
 
 interface CreateGiftParams {
   name: string;
@@ -25,15 +27,21 @@ interface CreateGiftListParams {
 
 export const createGiftList = async (req: Request, res: Response) => {
   try {
-    const { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts } = createGiftListSchema.parse(req.body);
-    const giftList = await GiftService.createGiftList({ userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts: gifts || [] });
-    res.status(201).json(giftList);
+    const parsedGifts = req.body.gifts ? JSON.parse(req.body.gifts) : [];
+
+    const { userId, type, name, slug, eventDate, description, shareableLink, status } =
+      createGiftListSchema.parse({ ...req.body, gifts: parsedGifts });
+
+    const giftList = await GiftService.createGiftList(
+      { userId, type, name, slug, eventDate, description, shareableLink, status, gifts: parsedGifts },
+      req,
+      res
+    );
+
+    res.status(201).json({ message: 'Lista de presentes criada com sucesso', giftList });
+
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(400).json({ error: 'Erro de validação', details: error.errors });
-    } else {
-      res.status(500).json({ error: 'Erro ao criar lista de presentes: ' + (error as Error).message });
-    }
+    res.status(500).json({ error: 'Erro ao criar lista de presentes', details: (error as Error).message });
   }
 };
 
@@ -84,8 +92,8 @@ export const getGiftById = async (req: Request, res: Response) => {
 export const updateGiftList = async (req: Request, res: Response) => {
   const id = req.params.giftId;
   try {
-    const { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts } = createGiftListSchema.parse(req.body);
-    const giftList = await GiftService.updateGiftList(id, { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts: gifts || [] });
+    const { userId, type, name, slug, eventDate, description, shareableLink, status, gifts } = createGiftListSchema.parse(req.body);
+    const giftList = await GiftService.updateGiftList(id, { userId, type, name, slug, eventDate, description, shareableLink, status, gifts: gifts || [] });
     res.json(giftList);
   } catch (error) {
     if (error instanceof ZodError) {

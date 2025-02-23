@@ -8,19 +8,17 @@ const giftService_1 = __importDefault(require("../services/giftService"));
 const giftListValidator_1 = require("../validators/giftListValidator");
 const giftValidator_1 = require("../validators/giftValidator");
 const zod_1 = require("zod");
+const multer_1 = __importDefault(require("multer"));
+const upload = (0, multer_1.default)();
 const createGiftList = async (req, res) => {
     try {
-        const { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
-        const giftList = await giftService_1.default.createGiftList({ userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts: gifts || [] });
-        res.status(201).json(giftList);
+        const parsedGifts = req.body.gifts ? JSON.parse(req.body.gifts) : [];
+        const { userId, type, name, slug, eventDate, description, shareableLink, status } = giftListValidator_1.createGiftListSchema.parse({ ...req.body, gifts: parsedGifts });
+        const giftList = await giftService_1.default.createGiftList({ userId, type, name, slug, eventDate, description, shareableLink, status, gifts: parsedGifts }, req, res);
+        res.status(201).json({ message: 'Lista de presentes criada com sucesso', giftList });
     }
     catch (error) {
-        if (error instanceof zod_1.ZodError) {
-            res.status(400).json({ error: 'Erro de validação', details: error.errors });
-        }
-        else {
-            res.status(500).json({ error: 'Erro ao criar lista de presentes: ' + error.message });
-        }
+        res.status(500).json({ error: 'Erro ao criar lista de presentes', details: error.message });
     }
 };
 exports.createGiftList = createGiftList;
@@ -75,8 +73,8 @@ exports.getGiftById = getGiftById;
 const updateGiftList = async (req, res) => {
     const id = req.params.giftId;
     try {
-        const { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
-        const giftList = await giftService_1.default.updateGiftList(id, { userId, type, name, slug, eventDate, description, banner, moments_images, shareableLink, status, gifts: gifts || [] });
+        const { userId, type, name, slug, eventDate, description, shareableLink, status, gifts } = giftListValidator_1.createGiftListSchema.parse(req.body);
+        const giftList = await giftService_1.default.updateGiftList(id, { userId, type, name, slug, eventDate, description, shareableLink, status, gifts: gifts || [] });
         res.json(giftList);
     }
     catch (error) {

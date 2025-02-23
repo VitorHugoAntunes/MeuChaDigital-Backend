@@ -11,19 +11,23 @@ import {
   updateGift,
   deleteGift
 } from '../controllers/giftController';
+import { upload, validateUploadedFiles } from '../services/imageUploadService';
 
 const router = Router();
 
-// GiftList routes
+const uploadMiddleware = upload.fields([
+  { name: 'banner', maxCount: 1 }, // banner (upload único)
+  { name: 'moments_images', maxCount: 10 }, // imagens de momentos (upload múltiplo)
+]);
 
+// GiftList routes
 router.get('/', getAllGiftLists);
 router.get('/:id', getGiftListById);
-router.post('/', createGiftList);
+router.post('/', uploadMiddleware, validateUploadedFiles, createGiftList);
 router.put('/:id', updateGiftList);
 router.delete('/:id', deleteGiftList);
 
 // Gift routes
-
 router.post('/:id/gifts', createGift);
 router.get('/:id/gifts', getAllGifts);
 router.get('/:id/gifts/:giftId', getGiftById);
