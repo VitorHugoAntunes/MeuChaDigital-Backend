@@ -76,7 +76,10 @@ const createGiftList = async (data: GiftListCreate, req: any, res: any) => {
     },
   });
 
-  fs.rmdirSync(`uploads/${req.body.userId}`, { recursive: true });
+  if (fs.existsSync(`uploads/${req.body.userId}`)) {
+    fs.rmdirSync(`uploads/${req.body.userId}`, { recursive: true });
+  }
+
   return updatedGiftList;
 };
 
@@ -132,8 +135,9 @@ const createGift = async (data: GiftCreate, req: any, res: any) => {
     });
   }
 
-  // Remover os arquivos locais da pasta do usuário após o upload
-  fs.rmdirSync(`uploads/${req.body.userId}`, { recursive: true });
+  if (fs.existsSync(`uploads/${req.body.userId}`)) {
+    fs.rmdirSync(`uploads/${req.body.userId}`, { recursive: true });
+  }
 
   return gift;
 };
