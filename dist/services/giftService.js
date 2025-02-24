@@ -1,35 +1,14 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
+const fs_1 = __importDefault(require("fs"));
+const imageUploadService_1 = __importDefault(require("./imageUploadService"));
 const prisma = new client_1.PrismaClient();
 const createGiftList = async (data, req, res) => {
-    let bannerUrl = undefined;
-    let momentsImagesUrls = undefined;
-    console.log('ARQUIVOS', req.files);
-    console.log('BANNER', req.files[0]);
-    if (req.files && req.files['banner']) {
-        try {
-            bannerUrl = req.files['banner'][0].location; // URL do banner
-            console.log('BANNER URL', bannerUrl);
-        }
-        catch (error) {
-            console.error('Erro ao acessar URL do banner:', error);
-            throw new Error('Erro ao acessar URL do banner');
-        }
-    }
-    if (req.files && req.files['moments_images']) {
-        try {
-            momentsImagesUrls = req.files['moments_images'].map((file) => file.location);
-            console.log('MOMENTS IMAGES URLS', momentsImagesUrls);
-        }
-        catch (error) {
-            console.error('Erro ao acessar URLs das imagens de momentos:', error);
-            throw new Error('Erro ao acessar URLs das imagens de momentos');
-        }
-    }
-    console.log('BANNER URL', bannerUrl);
-    console.log('MOMENTS IMAGES URLS', momentsImagesUrls);
-    // Criação da lista de presentes
+    // Criar a lista no banco de dados
     const giftList = await prisma.giftList.create({
         data: {
             name: data.name,
@@ -40,20 +19,22 @@ const createGiftList = async (data, req, res) => {
             shareableLink: data.shareableLink ?? '',
             userId: data.userId,
             status: data.status,
-            gifts: {
-                create: data.gifts,
-            },
         },
         include: {
             gifts: true,
         },
     });
+    const uploadedFilesUrls = await (0, imageUploadService_1.default)(req.body.userId, giftList.id, false);
+    // Assumindo que o primeiro arquivo seja o banner e o restante sejam momentos
+    const bannerUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
+    const momentsImagesUrls = uploadedFilesUrls.length > 1 ? uploadedFilesUrls.slice(1) : [];
+    console.log('BANNER URL', bannerUrl);
+    console.log('MOMENTS IMAGES URLS', momentsImagesUrls);
     let bannerId = undefined;
-    // Criação do banner no banco de dados
     if (bannerUrl) {
         const createdBanner = await prisma.image.create({
             data: {
-                url: bannerUrl.toString(),
+                url: bannerUrl,
                 type: 'BANNER',
                 bannerForGiftListId: giftList.id,
             },
@@ -61,8 +42,7 @@ const createGiftList = async (data, req, res) => {
         bannerId = createdBanner.id;
     }
     let momentsImages = undefined;
-    // Criação das imagens de momentos no banco de dados
-    if (momentsImagesUrls) {
+    if (momentsImagesUrls.length > 0) {
         const createdImages = await Promise.all(momentsImagesUrls.map(async (url) => {
             return prisma.image.create({
                 data: {
@@ -76,7 +56,6 @@ const createGiftList = async (data, req, res) => {
             connect: createdImages.map((img) => ({ id: img.id })),
         };
     }
-    // Atualização da lista de presentes com o banner e as imagens de momentos
     const updatedGiftList = await prisma.giftList.update({
         where: { id: giftList.id },
         data: {
@@ -89,6 +68,7 @@ const createGiftList = async (data, req, res) => {
             gifts: true,
         },
     });
+    fs_1.default.rmdirSync(`uploads/${req.body.userId}`, { recursive: true });
     return updatedGiftList;
 };
 const getAllGiftLists = async () => {
@@ -102,8 +82,8 @@ const getGiftListById = async (id) => {
         include: { banner: true, momentsImages: true },
     });
 };
-const createGift = async (data) => {
-    let photo = null;
+const createGift = async (data, req, res) => {
+    // Criar o presente no banco de dados
     const gift = await prisma.gift.create({
         data: {
             name: data.name,
@@ -115,25 +95,28 @@ const createGift = async (data) => {
         },
         include: { photo: true },
     });
-    if (data.photo) {
-        photo = await prisma.image.create({
-            data: { url: data.photo, type: 'GIFT' },
+    // Faz o upload do arquivo para o S3 e obtém a URL
+    const uploadedFilesUrls = await (0, imageUploadService_1.default)(req.body.userId, data.giftListId, true);
+    const giftPhotoUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
+    console.log('GIFT PHOTO URL', giftPhotoUrl);
+    let photo = undefined;
+    // Se houver uma foto, criar a entrada no banco e vincular ao presente
+    if (giftPhotoUrl) {
+        const createdPhoto = await prisma.image.create({
+            data: { url: giftPhotoUrl, type: 'GIFT', giftId: gift.id },
         });
+        photo = createdPhoto;
     }
+    // Atualizar o presente com a foto vinculada
     if (photo) {
         await prisma.gift.update({
             where: { id: gift.id },
-            data: {
-                photoId: photo.id,
-            },
-        });
-        await prisma.image.update({
-            where: { id: photo.id },
-            data: {
-                giftId: gift.id,
-            },
+            data: { photoId: photo.id },
+            include: { photo: true },
         });
     }
+    // Remover os arquivos locais da pasta do usuário após o upload
+    fs_1.default.rmdirSync(`uploads/${req.body.userId}`, { recursive: true });
     return gift;
 };
 const getAllGifts = async () => {

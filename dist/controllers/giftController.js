@@ -8,8 +8,6 @@ const giftService_1 = __importDefault(require("../services/giftService"));
 const giftListValidator_1 = require("../validators/giftListValidator");
 const giftValidator_1 = require("../validators/giftValidator");
 const zod_1 = require("zod");
-const multer_1 = __importDefault(require("multer"));
-const upload = (0, multer_1.default)();
 const createGiftList = async (req, res) => {
     try {
         const parsedGifts = req.body.gifts ? JSON.parse(req.body.gifts) : [];
@@ -40,8 +38,9 @@ const getGiftListById = async (req, res) => {
 exports.getGiftListById = getGiftListById;
 const createGift = async (req, res) => {
     try {
-        const { name, priority, description, photo, totalValue, categoryId, giftListId } = giftValidator_1.createGiftSchema.parse(req.body);
-        const gift = await giftService_1.default.createGift({ name, priority, description, photo, totalValue, categoryId, giftListId });
+        const parsedTotalValue = parseFloat(req.body.totalValue);
+        const { name, priority, description, totalValue, categoryId, userId, giftListId } = giftValidator_1.createGiftSchema.parse({ ...req.body, totalValue: parsedTotalValue });
+        const gift = await giftService_1.default.createGift({ name, priority, description, totalValue: parsedTotalValue, categoryId, giftListId }, req, res);
         res.status(201).json(gift);
     }
     catch (error) {
@@ -90,8 +89,8 @@ exports.updateGiftList = updateGiftList;
 const updateGift = async (req, res) => {
     const id = req.params.giftId;
     try {
-        const { name, priority, description, photo, totalValue, categoryId, giftListId } = giftValidator_1.createGiftSchema.parse(req.body);
-        const gift = await giftService_1.default.updateGift(id, { name, priority, description, photo, totalValue, categoryId, giftListId });
+        const { name, priority, description, totalValue, categoryId, userId, giftListId } = giftValidator_1.createGiftSchema.parse(req.body);
+        const gift = await giftService_1.default.updateGift(id, { name, priority, description, totalValue, categoryId, giftListId });
         res.json(gift);
     }
     catch (error) {

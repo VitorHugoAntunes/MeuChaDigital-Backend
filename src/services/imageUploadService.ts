@@ -1,42 +1,49 @@
-import multer from "multer";
-import multerS3 from "multer-s3";
-import s3 from "../config/aws";
+import fs from 'fs';
+import path from 'path';
+import s3 from '../config/aws';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 
-export const upload = multer({
-  storage: multerS3({
-    s3,
-    bucket: process.env.AWS_BUCKET_NAME!,
-    metadata: (req, file, cb) => {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: (req, file, cb) => {
-      cb(null, `uploads/${Date.now()}_${file.originalname}`);
-    },
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB
-});
+const uploadLocalFilesToS3 = async (userId: string, giftListId: string, gift?: boolean) => {
+  const uploadsDir = path.join(__dirname, '..', '..', 'uploads', userId);
 
-export const validateUploadedFiles = (req: any, res: any, next: any) => {
-  if (!req.files || !req.files['banner']) {
-    return res.status(400).json({ error: 'Nenhum arquivo enviado no campo "banner".' });
+  if (!fs.existsSync(uploadsDir)) {
+    console.log(`A pasta de uploads para o usuário ${userId} não existe.`);
+    return [];
   }
 
-  if (!req.files || !req.files['moments_images']) {
-    return res.status(400).json({ error: 'Nenhum arquivo enviado no campo "moments_images".' });
-  }
+  const files = fs.readdirSync(uploadsDir);
+  const uploadedFilesUrls: string[] = [];
 
-  const bannerFile = req.files['banner'][0];
-  if (bannerFile.size > 5 * 1024 * 1024) { // 5MB
-    return res.status(400).json({ error: 'O arquivo do banner excede o limite de 5MB.' });
-  }
+  for (const file of files) {
+    const filePath = path.join(uploadsDir, file);
+    const fileStream = fs.createReadStream(filePath);
+    const fileExtension = path.extname(file).toLowerCase();
+    const baseName = path.basename(file, fileExtension);
 
-  const momentsImages = req.files['moments_images'];
-  for (const file of momentsImages) {
-    if (file.size > 5 * 1024 * 1024) { // 5MB
-      return res.status(400).json({ error: 'Uma ou mais imagens de momentos excedem o limite de 5MB.' });
+    const finalFileName = fileExtension === '.jpeg' || fileExtension === '.jpg'
+      ? file
+      : `${baseName}.jpeg`;
+
+    const uploadParams = {
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: gift ? `uploads/${userId}/giftLists/${giftListId}/gifts/${finalFileName}` : `uploads/${userId}/giftLists/${giftListId}/${finalFileName}`, // path e nome do arquivo no S3
+      Body: fileStream,
+      ContentType: 'image/jpeg',
+    };
+
+    try {
+      await s3.send(new PutObjectCommand(uploadParams));
+      const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
+      uploadedFilesUrls.push(fileUrl);
+      console.log(`Upload concluído: ${fileUrl}`);
+    } catch (error) {
+      console.error(`Erro ao fazer upload de ${file}:`, error);
+    } finally {
+      fs.unlinkSync(filePath);
     }
   }
 
-  next();
+  return uploadedFilesUrls;
 };
+
+export default uploadLocalFilesToS3;

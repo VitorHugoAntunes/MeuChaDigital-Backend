@@ -3,8 +3,6 @@ import GiftService from '../services/giftService';
 import { createGiftListSchema } from '../validators/giftListValidator';
 import { createGiftSchema } from '../validators/giftValidator';
 import { ZodError } from 'zod';
-import multer from "multer";
-const upload = multer();
 
 interface CreateGiftParams {
   name: string;
@@ -62,8 +60,10 @@ export const getGiftListById = async (req: Request, res: Response) => {
 
 export const createGift = async (req: Request, res: Response) => {
   try {
-    const { name, priority, description, photo, totalValue, categoryId, giftListId } = createGiftSchema.parse(req.body);
-    const gift = await GiftService.createGift({ name, priority, description, photo, totalValue, categoryId, giftListId });
+    const parsedTotalValue = parseFloat(req.body.totalValue);
+
+    const { name, priority, description, totalValue, categoryId, userId, giftListId } = createGiftSchema.parse({ ...req.body, totalValue: parsedTotalValue });
+    const gift = await GiftService.createGift({ name, priority, description, totalValue: parsedTotalValue, categoryId, giftListId }, req, res);
     res.status(201).json(gift);
   } catch (error) {
     if (error instanceof ZodError) {
@@ -107,8 +107,8 @@ export const updateGiftList = async (req: Request, res: Response) => {
 export const updateGift = async (req: Request, res: Response) => {
   const id = req.params.giftId;
   try {
-    const { name, priority, description, photo, totalValue, categoryId, giftListId } = createGiftSchema.parse(req.body);
-    const gift = await GiftService.updateGift(id, { name, priority, description, photo, totalValue, categoryId, giftListId });
+    const { name, priority, description, totalValue, categoryId, userId, giftListId } = createGiftSchema.parse(req.body);
+    const gift = await GiftService.updateGift(id, { name, priority, description, totalValue, categoryId, giftListId });
     res.json(gift);
   } catch (error) {
     if (error instanceof ZodError) {

@@ -14,7 +14,7 @@ export interface GiftCreate {
   name: string;
   priority: "LOW" | "MEDIUM" | "HIGH";
   description?: string;
-  photo: string;
+  photo?: string;
   totalValue: number;
   giftListId: string;
   categoryId: string;

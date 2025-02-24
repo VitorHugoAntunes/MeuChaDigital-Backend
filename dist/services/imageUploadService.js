@@ -3,41 +3,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateUploadedFiles = exports.upload = void 0;
-const multer_1 = __importDefault(require("multer"));
-const multer_s3_1 = __importDefault(require("multer-s3"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const aws_1 = __importDefault(require("../config/aws"));
-exports.upload = (0, multer_1.default)({
-    storage: (0, multer_s3_1.default)({
-        s3: aws_1.default,
-        bucket: process.env.AWS_BUCKET_NAME,
-        metadata: (req, file, cb) => {
-            cb(null, { fieldName: file.fieldname });
-        },
-        key: (req, file, cb) => {
-            cb(null, `uploads/${Date.now()}_${file.originalname}`);
-        },
-        contentType: multer_s3_1.default.AUTO_CONTENT_TYPE,
-    }),
-    limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB
-});
-const validateUploadedFiles = (req, res, next) => {
-    if (!req.files || !req.files['banner']) {
-        return res.status(400).json({ error: 'Nenhum arquivo enviado no campo "banner".' });
+const client_s3_1 = require("@aws-sdk/client-s3");
+const uploadLocalFilesToS3 = async (userId, giftListId, gift) => {
+    const uploadsDir = path_1.default.join(__dirname, '..', '..', 'uploads', userId);
+    if (!fs_1.default.existsSync(uploadsDir)) {
+        console.log(`A pasta de uploads para o usuário ${userId} não existe.`);
+        return [];
     }
-    if (!req.files || !req.files['moments_images']) {
-        return res.status(400).json({ error: 'Nenhum arquivo enviado no campo "moments_images".' });
-    }
-    const bannerFile = req.files['banner'][0];
-    if (bannerFile.size > 5 * 1024 * 1024) { // 5MB
-        return res.status(400).json({ error: 'O arquivo do banner excede o limite de 5MB.' });
-    }
-    const momentsImages = req.files['moments_images'];
-    for (const file of momentsImages) {
-        if (file.size > 5 * 1024 * 1024) { // 5MB
-            return res.status(400).json({ error: 'Uma ou mais imagens de momentos excedem o limite de 5MB.' });
+    const files = fs_1.default.readdirSync(uploadsDir);
+    const uploadedFilesUrls = [];
+    for (const file of files) {
+        const filePath = path_1.default.join(uploadsDir, file);
+        const fileStream = fs_1.default.createReadStream(filePath);
+        const fileExtension = path_1.default.extname(file).toLowerCase();
+        const baseName = path_1.default.basename(file, fileExtension);
+        const finalFileName = fileExtension === '.jpeg' || fileExtension === '.jpg'
+            ? file
+            : `${baseName}.jpeg`;
+        const uploadParams = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: gift ? `uploads/${userId}/giftLists/${giftListId}/gifts/${finalFileName}` : `uploads/${userId}/giftLists/${giftListId}/${finalFileName}`, // path e nome do arquivo no S3
+            Body: fileStream,
+            ContentType: 'image/jpeg',
+        };
+        try {
+            await aws_1.default.send(new client_s3_1.PutObjectCommand(uploadParams));
+            const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
+            uploadedFilesUrls.push(fileUrl);
+            console.log(`Upload concluído: ${fileUrl}`);
+        }
+        catch (error) {
+            console.error(`Erro ao fazer upload de ${file}:`, error);
+        }
+        finally {
+            fs_1.default.unlinkSync(filePath);
         }
     }
-    next();
+    return uploadedFilesUrls;
 };
-exports.validateUploadedFiles = validateUploadedFiles;
+exports.default = uploadLocalFilesToS3;

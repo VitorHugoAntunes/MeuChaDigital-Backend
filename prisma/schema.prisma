@@ -19,7 +19,7 @@ model User {
   name          String?
   email         String?        @unique
   photoId       String?        @unique @db.Uuid
-  photo         Image?         @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo         Image?         @relation(name: "AvatarImage")
   isGuest       Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -61,8 +61,8 @@ model Image {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  userId String? @db.Uuid
-  user   User?
+  userId String? @unique @db.Uuid
+  user   User?   @relation(name: "AvatarImage", fields: [userId], references: [id], onDelete: Cascade)
 
   bannerForGiftListId String?   @unique @db.Uuid
   bannerForGiftList   GiftList? @relation(name: "BannerImage", fields: [bannerForGiftListId], references: [id], onDelete: Cascade)
@@ -70,8 +70,8 @@ model Image {
   momentsForGiftListId String?   @db.Uuid
   momentsForGiftList   GiftList? @relation(name: "MomentsImages", fields: [momentsForGiftListId], references: [id], onDelete: Cascade)
 
-  giftId String? @db.Uuid
-  Gift   Gift?
+  giftId String? @unique @db.Uuid
+  Gift   Gift?   @relation(name: "GiftImage", fields: [giftId], references: [id], onDelete: Cascade)
 }
 
 enum ImageType {
@@ -89,8 +89,7 @@ model Gift {
   priority    GiftPriority
 
   photoId String? @unique @db.Uuid
-  photo   Image?  @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  giftId  String? @unique @db.Uuid
+  photo   Image?  @relation(name: "GiftImage")
 
   giftListId String   @db.Uuid
   list       GiftList @relation(fields: [giftListId], references: [id], onDelete: Cascade)
