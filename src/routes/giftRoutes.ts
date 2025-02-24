@@ -12,7 +12,7 @@ import {
   deleteGift
 } from '../controllers/giftController';
 
-import { uploadMiddleware, validateUploadedFilesForGiftList, validateUploadedFilesForGift } from '../middlewares/validateUploadFilesMiddelware';
+import { uploadMiddleware, validateUploadedFilesForGiftList, validateUploadedFilesForGift } from '../middlewares/validateUploadFilesMiddleware';
 
 const router = Router();
 
