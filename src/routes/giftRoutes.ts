@@ -1,16 +1,19 @@
 import { Router } from 'express';
 import {
-  createGiftList,
-  getGiftListById,
-  getAllGiftLists,
-  updateGiftList,
-  deleteGiftList,
   createGift,
   getGiftById,
   getAllGifts,
   updateGift,
   deleteGift
 } from '../controllers/giftController';
+
+import {
+  createGiftList,
+  getGiftListById,
+  getAllGiftLists,
+  updateGiftList,
+  deleteGiftList,
+} from '../controllers/giftListController';
 
 import { uploadMiddleware, validateUploadedFilesForGiftList, validateUploadedFilesForGift } from '../middlewares/validateUploadFilesMiddleware';
 
