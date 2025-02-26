@@ -53,7 +53,7 @@ const updateGiftList = async (req, res) => {
 };
 exports.updateGiftList = updateGiftList;
 const deleteGiftList = async (req, res) => {
-    const id = req.params.giftId;
+    const id = req.params.id;
     try {
         const giftList = await giftListService_1.default.deleteGiftList(id);
         if (giftList) {

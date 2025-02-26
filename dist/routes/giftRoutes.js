@@ -12,9 +12,9 @@ router.post('/', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploa
 router.put('/:id', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGiftList, giftListController_1.updateGiftList);
 router.delete('/:id', giftListController_1.deleteGiftList);
 // Gift routes
-router.post('/:id/gifts', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGift, giftController_1.createGift);
 router.get('/:id/gifts', giftController_1.getAllGifts);
 router.get('/:id/gifts/:giftId', giftController_1.getGiftById);
-router.put('/:id/gifts/:giftId', giftController_1.updateGift);
+router.post('/:id/gifts', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGift, giftController_1.createGift);
+router.put('/:id/gifts/:giftId', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGift, giftController_1.updateGift);
 router.delete('/:id/gifts/:giftId', giftController_1.deleteGift);
 exports.default = router;

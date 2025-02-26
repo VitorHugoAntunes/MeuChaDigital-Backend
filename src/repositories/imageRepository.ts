@@ -36,6 +36,14 @@ const processMomentsImages = async (momentsImagesUrls: string[], giftListId: str
   };
 };
 
+export const processGiftImage = async (url: string, giftId: string) => {
+  const createdImage = await prisma.image.create({
+    data: { url, type: 'GIFT', giftId },
+  });
+
+  return createdImage.id;
+};
+
 const deleteImagesFromGiftList = async (imageIds: string[]) => {
   return await prisma.image.deleteMany({
     where: {
@@ -46,4 +54,12 @@ const deleteImagesFromGiftList = async (imageIds: string[]) => {
   });
 };
 
-export { processBanner, processMomentsImages, deleteImagesFromGiftList };
+const deleteImageFromGift = async (imageId: string) => {
+  return await prisma.image.delete({
+    where: {
+      id: imageId,
+    },
+  });
+};
+
+export { processBanner, processMomentsImages, deleteImagesFromGiftList, deleteImageFromGift };

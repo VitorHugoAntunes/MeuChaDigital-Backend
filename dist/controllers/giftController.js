@@ -11,7 +11,7 @@ const createGift = async (req, res) => {
     try {
         const parsedTotalValue = parseFloat(req.body.totalValue);
         const { name, priority, description, totalValue, categoryId, userId, giftListId } = giftValidator_1.createGiftSchema.parse({ ...req.body, totalValue: parsedTotalValue });
-        const gift = await giftService_1.default.createGift({ name, priority, description, totalValue: parsedTotalValue, categoryId, giftListId }, req, res);
+        const gift = await giftService_1.default.createGiftService({ name, priority, description, totalValue: parsedTotalValue, categoryId, giftListId }, req, res);
         res.status(201).json(gift);
     }
     catch (error) {
@@ -25,13 +25,13 @@ const createGift = async (req, res) => {
 };
 exports.createGift = createGift;
 const getAllGifts = async (req, res) => {
-    const gifts = await giftService_1.default.getAllGifts();
+    const gifts = await giftService_1.default.getAllGiftsService();
     res.json(gifts);
 };
 exports.getAllGifts = getAllGifts;
 const getGiftById = async (req, res) => {
     const id = req.params.giftId;
-    const gift = await giftService_1.default.getGiftById(id);
+    const gift = await giftService_1.default.getGiftByIdService(id);
     if (gift) {
         res.json(gift);
     }
@@ -41,10 +41,12 @@ const getGiftById = async (req, res) => {
 };
 exports.getGiftById = getGiftById;
 const updateGift = async (req, res) => {
-    const id = req.params.giftId;
+    const userId = req.body.userId;
+    const giftListId = req.params.id;
+    const giftId = req.params.giftId;
     try {
-        const { name, priority, description, totalValue, categoryId, userId, giftListId } = giftValidator_1.createGiftSchema.parse(req.body);
-        const gift = await giftService_1.default.updateGift(id, { name, priority, description, totalValue, categoryId, giftListId });
+        const { name, priority, description, totalValue, categoryId } = giftValidator_1.updateGiftSchema.parse(req.body);
+        const gift = await giftService_1.default.updateGiftService(userId, giftListId, giftId, { name, priority, description, totalValue, categoryId }, req);
         res.json(gift);
     }
     catch (error) {
@@ -60,7 +62,7 @@ exports.updateGift = updateGift;
 const deleteGift = async (req, res) => {
     const id = req.params.giftId;
     try {
-        const gift = await giftService_1.default.deleteGift(id);
+        const gift = await giftService_1.default.deleteGiftService(id);
         if (gift) {
             res.json(gift);
         }

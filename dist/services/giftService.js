@@ -1,88 +1,65 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("@prisma/client");
-const fs_1 = __importDefault(require("fs"));
 const imageUploadService_1 = require("./imageUploadService");
-const prisma = new client_1.PrismaClient();
-const createGift = async (data, req, res) => {
-    // Criar o presente no banco de dados
-    const gift = await prisma.gift.create({
-        data: {
-            name: data.name,
-            description: data.description,
-            priority: data.priority,
-            totalValue: data.totalValue,
-            giftListId: data.giftListId,
-            categoryId: data.categoryId,
-        },
-        include: { photo: true },
-    });
-    // Faz o upload do arquivo para o S3 e obtém a URL
-    const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, data.giftListId, true);
+const cleanUploadDirectory_1 = require("../utils/cleanUploadDirectory");
+const giftRepository_1 = require("../repositories/giftRepository");
+const imageRepository_1 = require("../repositories/imageRepository");
+const giftListValidation_1 = require("../utils/giftListValidation");
+const imageService_1 = require("./imageService");
+const giftListRepository_1 = require("../repositories/giftListRepository");
+const createGiftService = async (data, req, res) => {
+    const gift = await (0, giftRepository_1.createGiftInDatabase)(data);
+    const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, data.giftListId, gift.id);
     const giftPhotoUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
-    console.log('GIFT PHOTO URL', giftPhotoUrl);
-    let photo = undefined;
-    // Se houver uma foto, criar a entrada no banco e vincular ao presente
     if (giftPhotoUrl) {
-        const createdPhoto = await prisma.image.create({
-            data: { url: giftPhotoUrl, type: 'GIFT', giftId: gift.id },
-        });
-        photo = createdPhoto;
+        const photoId = await (0, imageRepository_1.processGiftImage)(giftPhotoUrl, gift.id);
+        await (0, giftRepository_1.updateGiftInDatabase)(gift.id, data, photoId);
     }
-    // Atualizar o presente com a foto vinculada
-    if (photo) {
-        await prisma.gift.update({
-            where: { id: gift.id },
-            data: { photoId: photo.id },
-            include: { photo: true },
-        });
-    }
-    if (fs_1.default.existsSync(`uploads/${req.body.userId}`)) {
-        fs_1.default.rmdirSync(`uploads/${req.body.userId}`, { recursive: true });
-    }
+    (0, cleanUploadDirectory_1.cleanUploadDirectory)(req.body.userId);
     return gift;
 };
-const getAllGifts = async () => {
-    return await prisma.gift.findMany({ include: { photo: true } });
+const getAllGiftsService = async () => {
+    return await (0, giftRepository_1.getAllGiftsFromDatabase)();
 };
-const getGiftById = async (id) => {
-    return await prisma.gift.findUnique({
-        where: { id },
-        include: { photo: true },
-    });
+const getGiftByIdService = async (id) => {
+    return await (0, giftRepository_1.getGiftByIdFromDatabase)(id);
 };
-const updateGift = async (id, data) => {
-    let photoId = undefined;
-    if (data.photo) {
-        const createdPhoto = await prisma.image.create({
-            data: { url: data.photo, type: 'GIFT' },
-        });
-        photoId = createdPhoto.id;
+const updateGiftService = async (userId, giftListId, giftId, data, req) => {
+    try {
+        const existingGift = await (0, giftRepository_1.getGiftByIdFromDatabase)(giftId);
+        const hasNewImage = req.files['giftPhoto'];
+        await (0, giftListValidation_1.deleteOldImagesFromS3)(userId, giftListId, hasNewImage, giftId);
+        if (!existingGift) {
+            throw new Error('Gift not found');
+        }
+        const { newGiftPhotoUrl } = await (0, imageUploadService_1.uploadNewImages)(userId, giftListId, req.files, giftId);
+        const photoId = await (0, imageService_1.updateGiftImage)(giftId, newGiftPhotoUrl, existingGift.photo?.id);
+        (0, cleanUploadDirectory_1.cleanUploadDirectory)(giftListId);
+        console.log('giftId', giftId);
+        return await (0, giftRepository_1.updateGiftInDatabase)(giftId, data, photoId);
     }
-    const gift = await prisma.gift.update({
-        where: { id },
-        data: {
-            name: data.name,
-            description: data.description,
-            totalValue: data.totalValue,
-            giftListId: data.giftListId,
-            categoryId: data.categoryId,
-            photoId,
-        },
-        include: { photo: true },
-    });
-    return gift;
+    catch (error) {
+        console.error('Error updating gift:', error);
+        throw error;
+    }
 };
-const deleteGift = async (id) => {
-    return await prisma.gift.delete({ where: { id } });
+const deleteGiftService = async (id) => {
+    const gift = await (0, giftRepository_1.getGiftByIdFromDatabase)(id);
+    if (!gift) {
+        throw new Error('Gift not found');
+    }
+    const giftList = await (0, giftListRepository_1.getGiftListByIdInDatabase)(gift.giftListId);
+    const userId = giftList?.userId;
+    if (!userId) {
+        throw new Error('User not found');
+    }
+    await (0, imageUploadService_1.deleteS3Files)(userId, gift.giftListId, true, id);
+    return await (0, giftRepository_1.deleteGiftFromDatabase)(id);
 };
 exports.default = {
-    createGift,
-    getAllGifts,
-    getGiftById,
-    updateGift,
-    deleteGift,
+    createGiftService,
+    getAllGiftsService,
+    getGiftByIdService,
+    updateGiftService,
+    deleteGiftService,
 };

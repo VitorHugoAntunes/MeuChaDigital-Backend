@@ -3,7 +3,7 @@ import path from 'path';
 import s3 from '../config/aws';
 import { PutObjectCommand, ListObjectsCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 
-const uploadLocalFilesToS3 = async (userId: string, giftListId: string, gift?: boolean) => {
+const uploadLocalFilesToS3 = async (userId: string, giftListId: string, giftId?: string) => {
   const uploadsDir = path.join(__dirname, '..', '..', 'uploads', userId);
 
   if (!fs.existsSync(uploadsDir)) {
@@ -26,7 +26,7 @@ const uploadLocalFilesToS3 = async (userId: string, giftListId: string, gift?: b
 
     const uploadParams = {
       Bucket: process.env.AWS_BUCKET_NAME!,
-      Key: gift ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${finalFileName}` : `uploads/${userId}/giftLists/${giftListId}/listsImages/${finalFileName}`, // path e nome do arquivo no S3
+      Key: giftId ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/${finalFileName}` : `uploads/${userId}/giftLists/${giftListId}/listsImages/${finalFileName}`, // path e nome do arquivo no S3
       Body: fileStream,
       ContentType: 'image/jpeg',
     };
@@ -46,15 +46,17 @@ const uploadLocalFilesToS3 = async (userId: string, giftListId: string, gift?: b
   return uploadedFilesUrls;
 };
 
-const deleteS3Files = async (userId: string, giftListId: string, gift?: boolean, deleteAll?: boolean) => {
+const deleteS3Files = async (userId: string, giftListId: string, deleteAll?: boolean, giftId?: string,) => {
   let prefix;
 
   if (deleteAll) {
-    prefix = `uploads/${userId}/giftLists/${giftListId}`;
+    prefix = giftId
+      ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/`
+      : `uploads/${userId}/giftLists/${giftListId}`;
+  } else if (giftId) {
+    prefix = `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/`;
   } else {
-    prefix = gift
-      ? `uploads/${userId}/giftLists/${giftListId}/giftsPhotos/`
-      : `uploads/${userId}/giftLists/${giftListId}/listsImages/`;
+    prefix = `uploads/${userId}/giftLists/${giftListId}/listsImages/`;
   }
 
   const listParams = {
@@ -88,12 +90,13 @@ const deleteS3Files = async (userId: string, giftListId: string, gift?: boolean,
   }
 };
 
-const uploadNewImages = async (userId: string, giftListId: string, files: any) => {
-  if (files['banner'] || files['moments_images']) {
-    const uploadedFilesUrls = await uploadLocalFilesToS3(userId, giftListId, false);
+const uploadNewImages = async (userId: string, giftListId: string, files: any, giftId?: string) => {
+  if (files['banner'] || files['moments_images'] || files['giftPhoto']) {
+    const uploadedFilesUrls = await uploadLocalFilesToS3(userId, giftListId, giftId);
     const newBannerUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
     const newMomentsImagesUrls = uploadedFilesUrls.length > 1 ? uploadedFilesUrls.slice(1) : [];
-    return { newBannerUrl, newMomentsImagesUrls };
+    const newGiftPhotoUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
+    return { newBannerUrl, newMomentsImagesUrls, newGiftPhotoUrl };
   }
   return { newBannerUrl: undefined, newMomentsImagesUrls: [] };
 };

@@ -19,3 +19,12 @@ export interface GiftCreate {
   giftListId: string;
   categoryId: string;
 }
+
+export interface GiftUpdate {
+  name?: string;
+  priority?: "LOW" | "MEDIUM" | "HIGH";
+  description?: string;
+  photo?: string;
+  totalValue?: number;
+  categoryId?: string;
+}

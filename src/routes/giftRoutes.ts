@@ -27,10 +27,10 @@ router.put('/:id', uploadMiddleware, validateUploadedFilesForGiftList, updateGif
 router.delete('/:id', deleteGiftList);
 
 // Gift routes
-router.post('/:id/gifts', uploadMiddleware, validateUploadedFilesForGift, createGift);
 router.get('/:id/gifts', getAllGifts);
 router.get('/:id/gifts/:giftId', getGiftById);
-router.put('/:id/gifts/:giftId', updateGift);
+router.post('/:id/gifts', uploadMiddleware, validateUploadedFilesForGift, createGift);
+router.put('/:id/gifts/:giftId', uploadMiddleware, validateUploadedFilesForGift, updateGift);
 router.delete('/:id/gifts/:giftId', deleteGift);
 
 export default router;

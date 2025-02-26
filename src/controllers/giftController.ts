@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import GiftService from '../services/giftService';
-import { createGiftSchema } from '../validators/giftValidator';
+import { createGiftSchema, updateGiftSchema } from '../validators/giftValidator';
 import { ZodError } from 'zod';
 
 export const createGift = async (req: Request, res: Response) => {
@@ -8,7 +8,7 @@ export const createGift = async (req: Request, res: Response) => {
     const parsedTotalValue = parseFloat(req.body.totalValue);
 
     const { name, priority, description, totalValue, categoryId, userId, giftListId } = createGiftSchema.parse({ ...req.body, totalValue: parsedTotalValue });
-    const gift = await GiftService.createGift({ name, priority, description, totalValue: parsedTotalValue, categoryId, giftListId }, req, res);
+    const gift = await GiftService.createGiftService({ name, priority, description, totalValue: parsedTotalValue, categoryId, giftListId }, req, res);
     res.status(201).json(gift);
   } catch (error) {
     if (error instanceof ZodError) {
@@ -20,13 +20,13 @@ export const createGift = async (req: Request, res: Response) => {
 };
 
 export const getAllGifts = async (req: Request, res: Response) => {
-  const gifts = await GiftService.getAllGifts();
+  const gifts = await GiftService.getAllGiftsService();
   res.json(gifts);
 };
 
 export const getGiftById = async (req: Request, res: Response) => {
   const id = req.params.giftId;
-  const gift = await GiftService.getGiftById(id);
+  const gift = await GiftService.getGiftByIdService(id);
   if (gift) {
     res.json(gift);
   } else {
@@ -35,10 +35,13 @@ export const getGiftById = async (req: Request, res: Response) => {
 };
 
 export const updateGift = async (req: Request, res: Response) => {
-  const id = req.params.giftId;
+  const userId = req.body.userId;
+  const giftListId = req.params.id;
+  const giftId = req.params.giftId;
+
   try {
-    const { name, priority, description, totalValue, categoryId, userId, giftListId } = createGiftSchema.parse(req.body);
-    const gift = await GiftService.updateGift(id, { name, priority, description, totalValue, categoryId, giftListId });
+    const { name, priority, description, totalValue, categoryId } = updateGiftSchema.parse(req.body);
+    const gift = await GiftService.updateGiftService(userId, giftListId, giftId, { name, priority, description, totalValue, categoryId }, req);
     res.json(gift);
   } catch (error) {
     if (error instanceof ZodError) {
@@ -52,7 +55,7 @@ export const updateGift = async (req: Request, res: Response) => {
 export const deleteGift = async (req: Request, res: Response) => {
   const id = req.params.giftId;
   try {
-    const gift = await GiftService.deleteGift(id);
+    const gift = await GiftService.deleteGiftService(id);
     if (gift) {
       res.json(gift);
     } else {

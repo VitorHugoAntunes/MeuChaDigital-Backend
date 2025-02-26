@@ -8,7 +8,7 @@ const giftListRepository_1 = require("../repositories/giftListRepository");
 const imageRepository_1 = require("../repositories/imageRepository");
 const createGiftListService = async (data, req, res) => {
     const giftList = await (0, giftListRepository_1.createGiftListInDatabase)(data);
-    const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, giftList.id, false);
+    const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, giftList.id);
     const bannerUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
     const momentsImagesUrls = uploadedFilesUrls.length > 1 ? uploadedFilesUrls.slice(1) : [];
     const bannerId = await (0, imageRepository_1.processBanner)(bannerUrl, giftList.id);
@@ -18,10 +18,10 @@ const createGiftListService = async (data, req, res) => {
     return updatedGiftList;
 };
 const getAllGiftListsService = async () => {
-    return await (0, giftListRepository_1.getAllGiftLists)();
+    return await (0, giftListRepository_1.getAllGiftListsInDatabase)();
 };
 const getGiftListByIdService = async (id) => {
-    return await (0, giftListRepository_1.getGiftListById)(id);
+    return await (0, giftListRepository_1.getGiftListByIdInDatabase)(id);
 };
 const updateGiftListService = async (id, data, req, res) => {
     try {
@@ -41,13 +41,13 @@ const updateGiftListService = async (id, data, req, res) => {
     }
 };
 const deleteGiftList = async (id) => {
-    const giftList = await (0, giftListRepository_1.getGiftListById)(id);
+    const giftList = await (0, giftListRepository_1.getGiftListByIdInDatabase)(id);
     if (!giftList)
         return null;
     if (giftList.status === 'ACTIVE') {
         throw new Error('Não é possível deletar uma lista de presentes ativa.');
     }
-    await (0, imageUploadService_1.deleteS3Files)(giftList.userId, id, false, true);
+    await (0, imageUploadService_1.deleteS3Files)(giftList.userId, id, true);
     return await (0, giftListRepository_1.deleteGiftListFromDatabase)(id);
 };
 exports.default = { createGiftListService, getAllGiftListsService, getGiftListByIdService, updateGiftListService, deleteGiftList };

@@ -3,13 +3,13 @@ import { uploadLocalFilesToS3, deleteS3Files, uploadNewImages } from './imageUpl
 import { updateBanner, updateMomentsImages } from './imageService';
 import { cleanUploadDirectory } from '../utils/cleanUploadDirectory';
 import { deleteOldImagesFromS3, validateGiftListExists } from '../utils/giftListValidation';
-import { createGiftListInDatabase, deleteGiftListFromDatabase, getAllGiftLists, getGiftListById, updateGiftListInDatabase, updateGiftListWithImages } from '../repositories/giftListRepository';
+import { createGiftListInDatabase, deleteGiftListFromDatabase, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, updateGiftListWithImages } from '../repositories/giftListRepository';
 import { processBanner, processMomentsImages } from '../repositories/imageRepository';
 
 const createGiftListService = async (data: GiftListCreate, req: any, res: any) => {
   const giftList = await createGiftListInDatabase(data);
 
-  const uploadedFilesUrls = await uploadLocalFilesToS3(req.body.userId, giftList.id, false);
+  const uploadedFilesUrls = await uploadLocalFilesToS3(req.body.userId, giftList.id);
 
   const bannerUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
   const momentsImagesUrls = uploadedFilesUrls.length > 1 ? uploadedFilesUrls.slice(1) : [];
@@ -26,11 +26,11 @@ const createGiftListService = async (data: GiftListCreate, req: any, res: any) =
 };
 
 const getAllGiftListsService = async () => {
-  return await getAllGiftLists();
+  return await getAllGiftListsInDatabase();
 };
 
 const getGiftListByIdService = async (id: string) => {
-  return await getGiftListById(id);
+  return await getGiftListByIdInDatabase(id);
 };
 
 const updateGiftListService = async (id: string, data: GiftListUpdate, req: any, res: any) => {
@@ -58,7 +58,7 @@ const updateGiftListService = async (id: string, data: GiftListUpdate, req: any,
 };
 
 const deleteGiftList = async (id: string) => {
-  const giftList = await getGiftListById(id);
+  const giftList = await getGiftListByIdInDatabase(id);
 
   if (!giftList) return null;
 
@@ -66,7 +66,7 @@ const deleteGiftList = async (id: string) => {
     throw new Error('Não é possível deletar uma lista de presentes ativa.');
   }
 
-  await deleteS3Files(giftList.userId, id, false, true);
+  await deleteS3Files(giftList.userId, id, true);
 
   return await deleteGiftListFromDatabase(id);
 };

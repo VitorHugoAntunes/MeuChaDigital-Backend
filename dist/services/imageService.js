@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateMomentsImages = exports.updateBanner = void 0;
+exports.updateGiftImage = exports.updateMomentsImages = exports.updateBanner = void 0;
 const imageRepository_1 = require("../repositories/imageRepository");
 const updateBanner = async (giftListId, newBannerUrl, existingBannerId) => {
     if (newBannerUrl) {
@@ -29,3 +29,14 @@ const updateMomentsImages = async (giftListId, newMomentsImagesUrls, existingMom
     return undefined;
 };
 exports.updateMomentsImages = updateMomentsImages;
+const updateGiftImage = async (giftId, newImageUrl, existingImageId) => {
+    if (newImageUrl) {
+        if (existingImageId) {
+            await (0, imageRepository_1.deleteImageFromGift)(existingImageId);
+        }
+        const createdImage = await (0, imageRepository_1.processGiftImage)(newImageUrl, giftId);
+        return createdImage;
+    }
+    return existingImageId;
+};
+exports.updateGiftImage = updateGiftImage;

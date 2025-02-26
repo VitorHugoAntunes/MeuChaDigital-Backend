@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGiftListFromDatabase = exports.updateGiftListInDatabase = exports.getGiftListById = exports.getAllGiftLists = exports.updateGiftListWithImages = exports.createGiftListInDatabase = void 0;
+exports.deleteGiftListFromDatabase = exports.updateGiftListInDatabase = exports.getGiftListByIdInDatabase = exports.getAllGiftListsInDatabase = exports.updateGiftListWithImages = exports.createGiftListInDatabase = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createGiftListInDatabase = async (data) => {
@@ -36,19 +36,19 @@ const updateGiftListWithImages = async (giftListId, bannerId, momentsImages) => 
     });
 };
 exports.updateGiftListWithImages = updateGiftListWithImages;
-const getAllGiftLists = async () => {
+const getAllGiftListsInDatabase = async () => {
     return await prisma.giftList.findMany({
         include: { banner: true, momentsImages: true },
     });
 };
-exports.getAllGiftLists = getAllGiftLists;
-const getGiftListById = async (id) => {
+exports.getAllGiftListsInDatabase = getAllGiftListsInDatabase;
+const getGiftListByIdInDatabase = async (id) => {
     return await prisma.giftList.findUnique({
         where: { id },
         include: { banner: true, momentsImages: true },
     });
 };
-exports.getGiftListById = getGiftListById;
+exports.getGiftListByIdInDatabase = getGiftListByIdInDatabase;
 const updateGiftListInDatabase = async (id, data, bannerId, momentsImages) => {
     return await prisma.giftList.update({
         where: { id },

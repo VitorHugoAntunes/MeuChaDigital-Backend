@@ -1,4 +1,4 @@
-import { deleteImagesFromGiftList, processBanner, processMomentsImages } from "../repositories/imageRepository";
+import { deleteImageFromGift, deleteImagesFromGiftList, processBanner, processGiftImage, processMomentsImages } from "../repositories/imageRepository";
 
 const updateBanner = async (giftListId: string, newBannerUrl: string | undefined, existingBannerId?: string) => {
   if (newBannerUrl) {
@@ -29,4 +29,16 @@ const updateMomentsImages = async (giftListId: string, newMomentsImagesUrls: str
   return undefined;
 }
 
-export { updateBanner, updateMomentsImages };
+const updateGiftImage = async (giftId: string, newImageUrl: string | undefined, existingImageId?: string) => {
+  if (newImageUrl) {
+    if (existingImageId) {
+      await deleteImageFromGift(existingImageId);
+    }
+    const createdImage = await processGiftImage(newImageUrl, giftId);
+
+    return createdImage;
+  }
+  return existingImageId;
+}
+
+export { updateBanner, updateMomentsImages, updateGiftImage };

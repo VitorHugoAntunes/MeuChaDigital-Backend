@@ -8,7 +8,7 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const aws_1 = __importDefault(require("../config/aws"));
 const client_s3_1 = require("@aws-sdk/client-s3");
-const uploadLocalFilesToS3 = async (userId, giftListId, gift) => {
+const uploadLocalFilesToS3 = async (userId, giftListId, giftId) => {
     const uploadsDir = path_1.default.join(__dirname, '..', '..', 'uploads', userId);
     if (!fs_1.default.existsSync(uploadsDir)) {
         console.log(`A pasta de uploads para o usuário ${userId} não existe.`);
@@ -26,7 +26,7 @@ const uploadLocalFilesToS3 = async (userId, giftListId, gift) => {
             : `${baseName}.jpeg`;
         const uploadParams = {
             Bucket: process.env.AWS_BUCKET_NAME,
-            Key: gift ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${finalFileName}` : `uploads/${userId}/giftLists/${giftListId}/listsImages/${finalFileName}`, // path e nome do arquivo no S3
+            Key: giftId ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/${finalFileName}` : `uploads/${userId}/giftLists/${giftListId}/listsImages/${finalFileName}`, // path e nome do arquivo no S3
             Body: fileStream,
             ContentType: 'image/jpeg',
         };
@@ -46,15 +46,18 @@ const uploadLocalFilesToS3 = async (userId, giftListId, gift) => {
     return uploadedFilesUrls;
 };
 exports.uploadLocalFilesToS3 = uploadLocalFilesToS3;
-const deleteS3Files = async (userId, giftListId, gift, deleteAll) => {
+const deleteS3Files = async (userId, giftListId, deleteAll, giftId) => {
     let prefix;
     if (deleteAll) {
-        prefix = `uploads/${userId}/giftLists/${giftListId}`;
+        prefix = giftId
+            ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/`
+            : `uploads/${userId}/giftLists/${giftListId}`;
+    }
+    else if (giftId) {
+        prefix = `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/`;
     }
     else {
-        prefix = gift
-            ? `uploads/${userId}/giftLists/${giftListId}/giftsPhotos/`
-            : `uploads/${userId}/giftLists/${giftListId}/listsImages/`;
+        prefix = `uploads/${userId}/giftLists/${giftListId}/listsImages/`;
     }
     const listParams = {
         Bucket: process.env.AWS_BUCKET_NAME,
@@ -86,12 +89,13 @@ const deleteS3Files = async (userId, giftListId, gift, deleteAll) => {
     }
 };
 exports.deleteS3Files = deleteS3Files;
-const uploadNewImages = async (userId, giftListId, files) => {
-    if (files['banner'] || files['moments_images']) {
-        const uploadedFilesUrls = await uploadLocalFilesToS3(userId, giftListId, false);
+const uploadNewImages = async (userId, giftListId, files, giftId) => {
+    if (files['banner'] || files['moments_images'] || files['giftPhoto']) {
+        const uploadedFilesUrls = await uploadLocalFilesToS3(userId, giftListId, giftId);
         const newBannerUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
         const newMomentsImagesUrls = uploadedFilesUrls.length > 1 ? uploadedFilesUrls.slice(1) : [];
-        return { newBannerUrl, newMomentsImagesUrls };
+        const newGiftPhotoUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
+        return { newBannerUrl, newMomentsImagesUrls, newGiftPhotoUrl };
     }
     return { newBannerUrl: undefined, newMomentsImagesUrls: [] };
 };
