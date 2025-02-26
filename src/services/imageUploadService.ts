@@ -101,4 +101,10 @@ const uploadNewImages = async (userId: string, giftListId: string, files: any, g
   return { newBannerUrl: undefined, newMomentsImagesUrls: [] };
 };
 
-export { uploadLocalFilesToS3, uploadNewImages, deleteS3Files };
+const deleteOldImagesFromS3 = async (userId: string, giftListId: string, hasNewImages: boolean, giftId?: string,) => {
+  if (hasNewImages) {
+    await deleteS3Files(userId, giftListId, true, giftId);
+  }
+};
+
+export { uploadLocalFilesToS3, uploadNewImages, deleteS3Files, deleteOldImagesFromS3 };

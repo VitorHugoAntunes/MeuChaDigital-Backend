@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const imageUploadService_1 = require("./imageUploadService");
 const imageService_1 = require("./imageService");
 const cleanUploadDirectory_1 = require("../utils/cleanUploadDirectory");
-const giftListValidation_1 = require("../utils/giftListValidation");
+const entityExistenceChecks_1 = require("../utils/entityExistenceChecks");
 const giftListRepository_1 = require("../repositories/giftListRepository");
 const imageRepository_1 = require("../repositories/imageRepository");
 const createGiftListService = async (data, req, res) => {
@@ -25,9 +25,9 @@ const getGiftListByIdService = async (id) => {
 };
 const updateGiftListService = async (id, data, req, res) => {
     try {
-        const existingGiftList = await (0, giftListValidation_1.validateGiftListExists)(id);
+        const existingGiftList = await (0, entityExistenceChecks_1.validateGiftListExists)(id);
         const hasNewImages = req.files['banner'] || req.files['moments_images'];
-        await (0, giftListValidation_1.deleteOldImagesFromS3)(existingGiftList.userId, id, hasNewImages);
+        await (0, imageUploadService_1.deleteOldImagesFromS3)(existingGiftList.userId, id, hasNewImages);
         const { newBannerUrl, newMomentsImagesUrls } = await (0, imageUploadService_1.uploadNewImages)(existingGiftList.userId, id, req.files);
         const bannerId = await (0, imageService_1.updateBanner)(id, newBannerUrl, existingGiftList.banner?.id);
         const momentsImages = await (0, imageService_1.updateMomentsImages)(id, newMomentsImagesUrls, existingGiftList.momentsImages);

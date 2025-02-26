@@ -1,8 +1,8 @@
 import { GiftListCreate, GiftListUpdate } from '../models/giftListModel';
-import { uploadLocalFilesToS3, deleteS3Files, uploadNewImages } from './imageUploadService';
+import { uploadLocalFilesToS3, deleteS3Files, uploadNewImages, deleteOldImagesFromS3 } from './imageUploadService';
 import { updateBanner, updateMomentsImages } from './imageService';
 import { cleanUploadDirectory } from '../utils/cleanUploadDirectory';
-import { deleteOldImagesFromS3, validateGiftListExists } from '../utils/giftListValidation';
+import { validateGiftListExists } from '../utils/entityExistenceChecks';
 import { createGiftListInDatabase, deleteGiftListFromDatabase, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, updateGiftListWithImages } from '../repositories/giftListRepository';
 import { processBanner, processMomentsImages } from '../repositories/imageRepository';
 

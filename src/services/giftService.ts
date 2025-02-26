@@ -1,5 +1,5 @@
 import { GiftCreate, GiftUpdate } from '../models/giftModel';
-import { deleteS3Files, uploadLocalFilesToS3, uploadNewImages } from './imageUploadService';
+import { deleteOldImagesFromS3, deleteS3Files, uploadLocalFilesToS3, uploadNewImages } from './imageUploadService';
 import { cleanUploadDirectory } from '../utils/cleanUploadDirectory';
 import {
   createGiftInDatabase,
@@ -9,7 +9,6 @@ import {
   deleteGiftFromDatabase,
 } from '../repositories/giftRepository';
 import { processGiftImage } from '../repositories/imageRepository';
-import { deleteOldImagesFromS3 } from '../utils/giftListValidation';
 import { updateGiftImage } from './imageService';
 import { getGiftListByIdInDatabase } from '../repositories/giftListRepository';
 

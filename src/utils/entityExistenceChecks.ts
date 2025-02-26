@@ -1,6 +1,5 @@
 import { getGiftByIdFromDatabase } from "../repositories/giftRepository";
 import { getGiftListByIdInDatabase } from "../repositories/giftListRepository";
-import { deleteS3Files } from "../services/imageUploadService";
 
 const validateGiftListExists = async (id: string) => {
   const existingGiftList = await getGiftListByIdInDatabase(id);
@@ -18,10 +17,4 @@ const validateGiftExists = async (id: string) => {
   return existingGift;
 }
 
-const deleteOldImagesFromS3 = async (userId: string, giftListId: string, hasNewImages: boolean, giftId?: string,) => {
-  if (hasNewImages) {
-    await deleteS3Files(userId, giftListId, true, giftId);
-  }
-};
-
-export { validateGiftListExists, validateGiftExists, deleteOldImagesFromS3 };
+export { validateGiftListExists, validateGiftExists };

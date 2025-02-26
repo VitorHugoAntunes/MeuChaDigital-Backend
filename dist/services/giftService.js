@@ -4,7 +4,6 @@ const imageUploadService_1 = require("./imageUploadService");
 const cleanUploadDirectory_1 = require("../utils/cleanUploadDirectory");
 const giftRepository_1 = require("../repositories/giftRepository");
 const imageRepository_1 = require("../repositories/imageRepository");
-const giftListValidation_1 = require("../utils/giftListValidation");
 const imageService_1 = require("./imageService");
 const giftListRepository_1 = require("../repositories/giftListRepository");
 const createGiftService = async (data, req, res) => {
@@ -28,7 +27,7 @@ const updateGiftService = async (userId, giftListId, giftId, data, req) => {
     try {
         const existingGift = await (0, giftRepository_1.getGiftByIdFromDatabase)(giftId);
         const hasNewImage = req.files['giftPhoto'];
-        await (0, giftListValidation_1.deleteOldImagesFromS3)(userId, giftListId, hasNewImage, giftId);
+        await (0, imageUploadService_1.deleteOldImagesFromS3)(userId, giftListId, hasNewImage, giftId);
         if (!existingGift) {
             throw new Error('Gift not found');
         }

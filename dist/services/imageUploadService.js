@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteS3Files = exports.uploadNewImages = exports.uploadLocalFilesToS3 = void 0;
+exports.deleteOldImagesFromS3 = exports.deleteS3Files = exports.uploadNewImages = exports.uploadLocalFilesToS3 = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const aws_1 = __importDefault(require("../config/aws"));
@@ -100,3 +100,9 @@ const uploadNewImages = async (userId, giftListId, files, giftId) => {
     return { newBannerUrl: undefined, newMomentsImagesUrls: [] };
 };
 exports.uploadNewImages = uploadNewImages;
+const deleteOldImagesFromS3 = async (userId, giftListId, hasNewImages, giftId) => {
+    if (hasNewImages) {
+        await deleteS3Files(userId, giftListId, true, giftId);
+    }
+};
+exports.deleteOldImagesFromS3 = deleteOldImagesFromS3;
