@@ -23,7 +23,7 @@ const router = Router();
 router.get('/', getAllGiftLists);
 router.get('/:id', getGiftListById);
 router.post('/', uploadMiddleware, validateUploadedFilesForGiftList, createGiftList);
-router.put('/:id', updateGiftList);
+router.put('/:id', uploadMiddleware, validateUploadedFilesForGiftList, updateGiftList);
 router.delete('/:id', deleteGiftList);
 
 // Gift routes

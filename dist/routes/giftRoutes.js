@@ -9,7 +9,7 @@ const router = (0, express_1.Router)();
 router.get('/', giftListController_1.getAllGiftLists);
 router.get('/:id', giftListController_1.getGiftListById);
 router.post('/', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGiftList, giftListController_1.createGiftList);
-router.put('/:id', giftListController_1.updateGiftList);
+router.put('/:id', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGiftList, giftListController_1.updateGiftList);
 router.delete('/:id', giftListController_1.deleteGiftList);
 // Gift routes
 router.post('/:id/gifts', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGift, giftController_1.createGift);

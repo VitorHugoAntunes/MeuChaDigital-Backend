@@ -18,7 +18,7 @@ export const storage = multer.diskStorage({
   },
   filename: (req: MulterRequest, file, cb) => {
     // Inclui o fieldname no nome do arquivo
-    const fileName = `${file.fieldname}_${Date.now()}_${file.originalname}`;
+    const fileName = `${file.fieldname}_${Date.now()}`;
     cb(null, fileName);
   },
 });

@@ -30,3 +30,15 @@ export interface GiftListCreate {
   status: "ACTIVE" | "INACTIVE";
   gifts: GiftCreate[];
 }
+export interface GiftListUpdate {
+  name?: string;
+  slug?: string;
+  type?: "WEDDING" | "BIRTHDAY" | "BABY_SHOWER";
+  eventDate?: string;
+  description?: string;
+  banner?: string;
+  moments_images?: string[];
+  shareableLink?: string;
+  userId?: string;
+  status?: "ACTIVE" | "INACTIVE";
+}

@@ -21,3 +21,13 @@ export const createGiftListSchema = z.object({
     })
   ).optional(),
 });
+
+export const updateGiftListSchema = z.object({
+  name: z.string().min(3, 'O título deve ter pelo menos 3 caracteres').optional(),
+  slug: z.string().min(3, 'O slug deve ter pelo menos 3 caracteres').optional(),
+  type: z.enum(['WEDDING', 'BIRTHDAY', 'BABY_SHOWER']).optional(),
+  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'A data do evento está inválida').optional(),
+  description: z.string().min(3, 'A descrição deve ter pelo menos 3 caracteres').optional(),
+  shareableLink: z.string().url('O link compartilhável está inválido').optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});

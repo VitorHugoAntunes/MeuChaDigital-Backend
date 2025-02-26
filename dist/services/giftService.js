@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const fs_1 = __importDefault(require("fs"));
-const imageUploadService_1 = __importDefault(require("./imageUploadService"));
+const imageUploadService_1 = require("./imageUploadService");
 const prisma = new client_1.PrismaClient();
 const createGift = async (data, req, res) => {
     // Criar o presente no banco de dados
@@ -21,7 +21,7 @@ const createGift = async (data, req, res) => {
         include: { photo: true },
     });
     // Faz o upload do arquivo para o S3 e obtém a URL
-    const uploadedFilesUrls = await (0, imageUploadService_1.default)(req.body.userId, data.giftListId, true);
+    const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, data.giftListId, true);
     const giftPhotoUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
     console.log('GIFT PHOTO URL', giftPhotoUrl);
     let photo = undefined;

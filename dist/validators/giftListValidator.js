@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createGiftListSchema = void 0;
+exports.updateGiftListSchema = exports.createGiftListSchema = void 0;
 const zod_1 = require("zod");
 exports.createGiftListSchema = zod_1.z.object({
     name: zod_1.z.string().min(3, 'O título deve ter pelo menos 3 caracteres'),
@@ -20,4 +20,13 @@ exports.createGiftListSchema = zod_1.z.object({
         categoryId: zod_1.z.string().min(3, 'O ID da categoria do presente está inválido'),
         giftListId: zod_1.z.string().min(3, 'O ID da lista de presentes do presente está inválido'),
     })).optional(),
+});
+exports.updateGiftListSchema = zod_1.z.object({
+    name: zod_1.z.string().min(3, 'O título deve ter pelo menos 3 caracteres').optional(),
+    slug: zod_1.z.string().min(3, 'O slug deve ter pelo menos 3 caracteres').optional(),
+    type: zod_1.z.enum(['WEDDING', 'BIRTHDAY', 'BABY_SHOWER']).optional(),
+    eventDate: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'A data do evento está inválida').optional(),
+    description: zod_1.z.string().min(3, 'A descrição deve ter pelo menos 3 caracteres').optional(),
+    shareableLink: zod_1.z.string().url('O link compartilhável está inválido').optional(),
+    status: zod_1.z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });

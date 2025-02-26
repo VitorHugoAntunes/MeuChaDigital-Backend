@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { GiftCreate } from '../models/giftModel';
 import fs from 'fs';
-import uploadLocalFilesToS3 from './imageUploadService';
+import { uploadLocalFilesToS3 } from './imageUploadService';
 
 const prisma = new PrismaClient();
 

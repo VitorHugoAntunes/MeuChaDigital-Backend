@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import GiftListService from '../services/giftListService';
-import { createGiftListSchema } from '../validators/giftListValidator';
+import { createGiftListSchema, updateGiftListSchema } from '../validators/giftListValidator';
 import { ZodError } from 'zod';
 
 export const createGiftList = async (req: Request, res: Response) => {
@@ -10,7 +10,7 @@ export const createGiftList = async (req: Request, res: Response) => {
     const { userId, type, name, slug, eventDate, description, shareableLink, status } =
       createGiftListSchema.parse({ ...req.body, gifts: parsedGifts });
 
-    const giftList = await GiftListService.createGiftList(
+    const giftList = await GiftListService.createGiftListService(
       { userId, type, name, slug, eventDate, description, shareableLink, status, gifts: parsedGifts },
       req,
       res
@@ -24,13 +24,13 @@ export const createGiftList = async (req: Request, res: Response) => {
 };
 
 export const getAllGiftLists = async (req: Request, res: Response) => {
-  const giftLists = await GiftListService.getAllGiftLists();
+  const giftLists = await GiftListService.getAllGiftListsService();
   res.json(giftLists);
 };
 
 export const getGiftListById = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const giftList = await GiftListService.getGiftListById(id);
+  const giftList = await GiftListService.getGiftListByIdService(id);
   if (giftList) {
     res.json(giftList);
   } else {
@@ -39,10 +39,10 @@ export const getGiftListById = async (req: Request, res: Response) => {
 }
 
 export const updateGiftList = async (req: Request, res: Response) => {
-  const id = req.params.giftId;
+  const id = req.params.id;
   try {
-    const { userId, type, name, slug, eventDate, description, shareableLink, status, gifts } = createGiftListSchema.parse(req.body);
-    const giftList = await GiftListService.updateGiftList(id, { userId, type, name, slug, eventDate, description, shareableLink, status, gifts: gifts || [] });
+    const { type, name, slug, eventDate, description, shareableLink, status } = updateGiftListSchema.parse(req.body);
+    const giftList = await GiftListService.updateGiftListService(id, { type, name, slug, eventDate, description, shareableLink, status }, req, res);
     res.json(giftList);
   } catch (error) {
     if (error instanceof ZodError) {
