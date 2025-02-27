@@ -1,101 +1,52 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const giftListRepository_1 = require("../repositories/giftListRepository");
+const userRepository_1 = require("../repositories/userRepository");
 const createUser = async (data) => {
-    const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+    const existingUser = await (0, userRepository_1.findUserByEmail)(data.email);
     if (existingUser) {
         return existingUser;
     }
-    let photo = null;
-    const user = await prisma.user.create({
-        data: {
-            name: data.name,
-            email: data.email,
-            googleId: data.googleId,
-        },
-        include: {
-            photo: true,
-        },
-    });
+    const user = await (0, userRepository_1.createUserInDatabase)(data);
     if (data.photo) {
-        photo = await prisma.image.create({
-            data: { url: data.photo, type: 'AVATAR' },
-        });
-    }
-    if (photo) {
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                photoId: photo.id,
-            },
-        });
-        await prisma.image.update({
-            where: { id: photo.id },
-            data: {
-                userId: user.id,
-            },
-        });
+        const photo = await (0, userRepository_1.createUserPhotoInDatabase)(data.photo, user.id);
+        await (0, userRepository_1.updateUserPhotoInDatabase)(user.id, photo.id);
     }
     return user;
 };
 const createGuestUser = async (data) => {
-    const user = await prisma.user.create({
-        data: {
-            isGuest: true,
-        },
-    });
-    return user;
+    return (0, userRepository_1.createGuestUserInDatabase)(data);
 };
 const getAllUsers = async () => {
-    const users = await prisma.user.findMany();
-    return users;
+    return (0, userRepository_1.getAllUsersFromDatabase)();
 };
 const getUserByEmail = async (email) => {
-    const user = await prisma.user.findUnique({ where: { email } });
-    return user;
+    return (0, userRepository_1.findUserByEmail)(email);
 };
 const getUserById = async (id) => {
-    const user = await prisma.user.findUnique({ where: { id } });
-    return user;
+    return (0, userRepository_1.findUserById)(id);
 };
 const updateUser = async (id, data) => {
     let photoId = undefined;
     if (data.photo) {
-        const existingPhoto = await prisma.image.findFirst({
-            where: { url: data.photo },
-        });
-        if (existingPhoto) {
-            photoId = existingPhoto.id;
-        }
-        else {
-            const createdPhoto = await prisma.image.create({
-                data: { url: data.photo, type: 'AVATAR' },
-            });
-            photoId = createdPhoto.id;
-        }
+        const photo = await (0, userRepository_1.createUserPhotoInDatabase)(data.photo, id);
+        photoId = photo.id;
     }
-    const user = await prisma.user.update({
-        where: { id },
-        data: {
-            name: data.name,
-            email: data.email,
-            googleId: data.googleId,
-            photoId,
-        },
-        include: {
-            photo: true,
-        },
-    });
-    return user;
+    return (0, userRepository_1.updateUserInDatabase)(id, data, photoId);
 };
 const deleteUser = async (id) => {
-    const giftLists = await prisma.giftList.findMany({ where: { userId: id } });
-    const activeGiftList = giftLists.find(giftList => giftList.status === 'ACTIVE');
-    if (activeGiftList) {
+    const hasActiveLists = await (0, giftListRepository_1.hasActiveGiftLists)(id);
+    if (hasActiveLists) {
         throw new Error('Usuário possui lista(s) de presentes ativa(s). Não é possível deletar.');
     }
-    const user = await prisma.user.delete({ where: { id } });
-    return user;
+    return (0, userRepository_1.deleteUserFromDatabase)(id);
 };
-exports.default = { createUser, createGuestUser, getAllUsers, getUserByEmail, getUserById, updateUser, deleteUser };
+exports.default = {
+    createUser,
+    createGuestUser,
+    getAllUsers,
+    getUserByEmail,
+    getUserById,
+    updateUser,
+    deleteUser,
+};

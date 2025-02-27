@@ -5,6 +5,7 @@ import { cleanUploadDirectory } from '../utils/cleanUploadDirectory';
 import { validateGiftListExists } from '../utils/entityExistenceChecks';
 import { createGiftListInDatabase, deleteGiftListFromDatabase, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, updateGiftListWithImages } from '../repositories/giftListRepository';
 import { processBanner, processMomentsImages } from '../repositories/imageRepository';
+import { hasActiveGiftLists } from '../repositories/giftListRepository';
 
 const createGiftListService = async (data: GiftListCreate, req: any, res: any) => {
   const giftList = await createGiftListInDatabase(data);
@@ -57,6 +58,10 @@ const updateGiftListService = async (id: string, data: GiftListUpdate, req: any,
   }
 };
 
+const checkUserHasActiveGiftLists = async (userId: string) => {
+  return hasActiveGiftLists(userId);
+};
+
 const deleteGiftList = async (id: string) => {
   const giftList = await getGiftListByIdInDatabase(id);
 
@@ -71,4 +76,11 @@ const deleteGiftList = async (id: string) => {
   return await deleteGiftListFromDatabase(id);
 };
 
-export default { createGiftListService, getAllGiftListsService, getGiftListByIdService, updateGiftListService, deleteGiftList };
+export default {
+  createGiftListService,
+  getAllGiftListsService,
+  getGiftListByIdService,
+  updateGiftListService,
+  checkUserHasActiveGiftLists,
+  deleteGiftList
+};

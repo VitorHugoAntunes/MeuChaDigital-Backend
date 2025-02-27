@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGiftListFromDatabase = exports.updateGiftListInDatabase = exports.getGiftListByIdInDatabase = exports.getAllGiftListsInDatabase = exports.updateGiftListWithImages = exports.createGiftListInDatabase = void 0;
+exports.deleteGiftListFromDatabase = exports.hasActiveGiftLists = exports.updateGiftListInDatabase = exports.getGiftListByIdInDatabase = exports.getAllGiftListsInDatabase = exports.updateGiftListWithImages = exports.createGiftListInDatabase = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createGiftListInDatabase = async (data) => {
@@ -71,6 +71,12 @@ const updateGiftListInDatabase = async (id, data, bannerId, momentsImages) => {
     });
 };
 exports.updateGiftListInDatabase = updateGiftListInDatabase;
+const hasActiveGiftLists = async (userId) => {
+    return await prisma.giftList.findFirst({
+        where: { userId, status: 'ACTIVE' },
+    });
+};
+exports.hasActiveGiftLists = hasActiveGiftLists;
 const deleteGiftListFromDatabase = async (id) => {
     return await prisma.giftList.delete({ where: { id } });
 };

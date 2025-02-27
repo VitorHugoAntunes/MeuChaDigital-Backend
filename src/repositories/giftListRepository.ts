@@ -76,8 +76,14 @@ const updateGiftListInDatabase = async (
   });
 };
 
+const hasActiveGiftLists = async (userId: string) => {
+  return await prisma.giftList.findFirst({
+    where: { userId, status: 'ACTIVE' },
+  });
+};
+
 const deleteGiftListFromDatabase = async (id: string) => {
   return await prisma.giftList.delete({ where: { id } });
 };
 
-export { createGiftListInDatabase, updateGiftListWithImages, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, deleteGiftListFromDatabase };
+export { createGiftListInDatabase, updateGiftListWithImages, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, hasActiveGiftLists, deleteGiftListFromDatabase };

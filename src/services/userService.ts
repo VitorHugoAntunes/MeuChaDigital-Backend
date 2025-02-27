@@ -1,129 +1,77 @@
-import { PrismaClient } from '@prisma/client';
+import { hasActiveGiftLists } from '../repositories/giftListRepository';
 import { UserCreate, GuestUserCreate } from '../models/userModel';
-
-const prisma = new PrismaClient();
+import {
+  findUserByEmail,
+  findUserById,
+  createUserInDatabase,
+  createGuestUserInDatabase,
+  getAllUsersFromDatabase,
+  updateUserInDatabase,
+  deleteUserFromDatabase,
+  createUserPhotoInDatabase,
+  updateUserPhotoInDatabase,
+} from '../repositories/userRepository';
 
 const createUser = async (data: UserCreate) => {
-  const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+  const existingUser = await findUserByEmail(data.email);
 
   if (existingUser) {
     return existingUser;
   }
 
-  let photo = null;
-
-
-  const user = await prisma.user.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      googleId: data.googleId,
-    },
-    include: {
-      photo: true,
-    },
-  });
+  const user = await createUserInDatabase(data);
 
   if (data.photo) {
-    photo = await prisma.image.create({
-      data: { url: data.photo, type: 'AVATAR' },
-    });
-  }
-
-  if (photo) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        photoId: photo.id,
-      },
-    });
-
-    await prisma.image.update({
-      where: { id: photo.id },
-      data: {
-        userId: user.id,
-      },
-    });
+    const photo = await createUserPhotoInDatabase(data.photo, user.id);
+    await updateUserPhotoInDatabase(user.id, photo.id);
   }
 
   return user;
 };
-
 
 const createGuestUser = async (data: GuestUserCreate) => {
-  const user = await prisma.user.create({
-    data: {
-      isGuest: true,
-    },
-  });
-
-  return user;
+  return createGuestUserInDatabase(data);
 };
 
-
 const getAllUsers = async () => {
-  const users = await prisma.user.findMany();
-  return users;
-}
+  return getAllUsersFromDatabase();
+};
 
 const getUserByEmail = async (email: string) => {
-  const user = await prisma.user.findUnique({ where: { email } });
-  return user;
-}
+  return findUserByEmail(email);
+};
 
 const getUserById = async (id: string) => {
-  const user = await prisma.user.findUnique({ where: { id } });
-  return user;
-}
+  return findUserById(id);
+};
 
 const updateUser = async (id: string, data: UserCreate) => {
   let photoId = undefined;
 
   if (data.photo) {
-    const existingPhoto = await prisma.image.findFirst({
-      where: { url: data.photo },
-    });
-
-    if (existingPhoto) {
-      photoId = existingPhoto.id;
-    } else {
-      const createdPhoto = await prisma.image.create({
-        data: { url: data.photo, type: 'AVATAR' },
-      });
-      photoId = createdPhoto.id;
-    }
+    const photo = await createUserPhotoInDatabase(data.photo, id);
+    photoId = photo.id;
   }
 
-  const user = await prisma.user.update({
-    where: { id },
-    data: {
-      name: data.name,
-      email: data.email,
-      googleId: data.googleId,
-      photoId,
-    },
-    include: {
-      photo: true,
-    },
-  });
-
-  return user;
+  return updateUserInDatabase(id, data, photoId);
 };
 
-
 const deleteUser = async (id: string) => {
+  const hasActiveLists = await hasActiveGiftLists(id);
 
-  const giftLists = await prisma.giftList.findMany({ where: { userId: id } });
-
-  const activeGiftList = giftLists.find(giftList => giftList.status === 'ACTIVE');
-
-  if (activeGiftList) {
+  if (hasActiveLists) {
     throw new Error('Usuário possui lista(s) de presentes ativa(s). Não é possível deletar.');
   }
 
-  const user = await prisma.user.delete({ where: { id } });
+  return deleteUserFromDatabase(id);
+};
 
-  return user;
-}
-
-export default { createUser, createGuestUser, getAllUsers, getUserByEmail, getUserById, updateUser, deleteUser };
+export default {
+  createUser,
+  createGuestUser,
+  getAllUsers,
+  getUserByEmail,
+  getUserById,
+  updateUser,
+  deleteUser,
+};

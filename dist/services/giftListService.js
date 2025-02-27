@@ -6,6 +6,7 @@ const cleanUploadDirectory_1 = require("../utils/cleanUploadDirectory");
 const entityExistenceChecks_1 = require("../utils/entityExistenceChecks");
 const giftListRepository_1 = require("../repositories/giftListRepository");
 const imageRepository_1 = require("../repositories/imageRepository");
+const giftListRepository_2 = require("../repositories/giftListRepository");
 const createGiftListService = async (data, req, res) => {
     const giftList = await (0, giftListRepository_1.createGiftListInDatabase)(data);
     const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, giftList.id);
@@ -40,6 +41,9 @@ const updateGiftListService = async (id, data, req, res) => {
         throw error;
     }
 };
+const checkUserHasActiveGiftLists = async (userId) => {
+    return (0, giftListRepository_2.hasActiveGiftLists)(userId);
+};
 const deleteGiftList = async (id) => {
     const giftList = await (0, giftListRepository_1.getGiftListByIdInDatabase)(id);
     if (!giftList)
@@ -50,4 +54,11 @@ const deleteGiftList = async (id) => {
     await (0, imageUploadService_1.deleteS3Files)(giftList.userId, id, true);
     return await (0, giftListRepository_1.deleteGiftListFromDatabase)(id);
 };
-exports.default = { createGiftListService, getAllGiftListsService, getGiftListByIdService, updateGiftListService, deleteGiftList };
+exports.default = {
+    createGiftListService,
+    getAllGiftListsService,
+    getGiftListByIdService,
+    updateGiftListService,
+    checkUserHasActiveGiftLists,
+    deleteGiftList
+};
