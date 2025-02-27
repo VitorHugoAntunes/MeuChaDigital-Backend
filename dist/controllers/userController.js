@@ -10,7 +10,7 @@ const zod_1 = require("zod");
 const createUser = async (params) => {
     try {
         const { name, email, googleId, photo } = userValidator_1.createUserSchema.parse(params);
-        const user = await userService_1.default.createUser({ name, email, googleId, photo });
+        const user = await userService_1.default.createUserService({ name, email, googleId, photo });
         return user; // Retorna o usuário criado
     }
     catch (error) {
@@ -26,7 +26,7 @@ exports.createUser = createUser;
 const createGuestUser = async (params) => {
     try {
         const { isGuest } = userValidator_1.createGuestUserSchema.parse(params);
-        const user = await userService_1.default.createGuestUser({ isGuest });
+        const user = await userService_1.default.createGuestUserService({ isGuest });
         return user;
     }
     catch (error) {
@@ -40,13 +40,13 @@ const createGuestUser = async (params) => {
 };
 exports.createGuestUser = createGuestUser;
 const getAllUsers = async (req, res) => {
-    const users = await userService_1.default.getAllUsers();
+    const users = await userService_1.default.getAllUsersService();
     res.json(users);
 };
 exports.getAllUsers = getAllUsers;
 const getUserByEmail = async (req, res) => {
     const email = req.params.email;
-    const user = await userService_1.default.getUserByEmail(email);
+    const user = await userService_1.default.getUserByEmailService(email);
     if (user) {
         res.json(user);
     }
@@ -57,7 +57,7 @@ const getUserByEmail = async (req, res) => {
 exports.getUserByEmail = getUserByEmail;
 const getUserById = async (req, res) => {
     const id = req.params.id;
-    const user = await userService_1.default.getUserById(id);
+    const user = await userService_1.default.getUserByIdService(id);
     if (user) {
         res.json(user);
     }
@@ -70,7 +70,7 @@ const updateUser = async (req, res) => {
     const id = req.params.id;
     try {
         const { name, email, googleId, photo } = userValidator_1.createUserSchema.parse(req.body);
-        const user = await userService_1.default.updateUser(id, { name, email, googleId, photo });
+        const user = await userService_1.default.updateUserService(id, { name, email, googleId, photo });
         res.json(user);
     }
     catch (error) {
@@ -86,7 +86,7 @@ exports.updateUser = updateUser;
 const deleteUser = async (req, res) => {
     try {
         const id = req.params.id;
-        const user = await userService_1.default.deleteUser(id);
+        const user = await userService_1.default.deleteUserService(id);
         res.json(user);
     }
     catch (error) {

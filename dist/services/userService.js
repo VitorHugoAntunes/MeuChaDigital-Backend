@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const giftListRepository_1 = require("../repositories/giftListRepository");
 const userRepository_1 = require("../repositories/userRepository");
-const createUser = async (data) => {
+const createUserService = async (data) => {
     const existingUser = await (0, userRepository_1.findUserByEmail)(data.email);
     if (existingUser) {
         return existingUser;
@@ -14,19 +14,19 @@ const createUser = async (data) => {
     }
     return user;
 };
-const createGuestUser = async (data) => {
+const createGuestUserService = async (data) => {
     return (0, userRepository_1.createGuestUserInDatabase)(data);
 };
-const getAllUsers = async () => {
+const getAllUsersService = async () => {
     return (0, userRepository_1.getAllUsersFromDatabase)();
 };
-const getUserByEmail = async (email) => {
+const getUserByEmailService = async (email) => {
     return (0, userRepository_1.findUserByEmail)(email);
 };
-const getUserById = async (id) => {
+const getUserByIdService = async (id) => {
     return (0, userRepository_1.findUserById)(id);
 };
-const updateUser = async (id, data) => {
+const updateUserService = async (id, data) => {
     let photoId = undefined;
     if (data.photo) {
         const photo = await (0, userRepository_1.createUserPhotoInDatabase)(data.photo, id);
@@ -34,7 +34,7 @@ const updateUser = async (id, data) => {
     }
     return (0, userRepository_1.updateUserInDatabase)(id, data, photoId);
 };
-const deleteUser = async (id) => {
+const deleteUserService = async (id) => {
     const hasActiveLists = await (0, giftListRepository_1.hasActiveGiftLists)(id);
     if (hasActiveLists) {
         throw new Error('Usuário possui lista(s) de presentes ativa(s). Não é possível deletar.');
@@ -42,11 +42,11 @@ const deleteUser = async (id) => {
     return (0, userRepository_1.deleteUserFromDatabase)(id);
 };
 exports.default = {
-    createUser,
-    createGuestUser,
-    getAllUsers,
-    getUserByEmail,
-    getUserById,
-    updateUser,
-    deleteUser,
+    createUserService,
+    createGuestUserService,
+    getAllUsersService,
+    getUserByEmailService,
+    getUserByIdService,
+    updateUserService,
+    deleteUserService,
 };

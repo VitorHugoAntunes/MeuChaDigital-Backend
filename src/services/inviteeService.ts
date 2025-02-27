@@ -1,22 +1,10 @@
-import { PrismaClient } from '@prisma/client';
 import { InviteeCreate } from '../models/inviteeModel';
+import { createInviteeInDatabase } from '../repositories/inviteeRepository';
 
-const prisma = new PrismaClient();
-
-const createInvitee = async (data: InviteeCreate) => {
-  const invitee = await prisma.invitee.create({
-    data: {
-      name: data.name,
-      phone: data.phone,
-      email: data.email,
-      additionalInvitees: data.additionalInvitees,
-      observation: data.observation,
-      giftList: { connect: { id: data.giftListId } },
-      status: data.status,
-    },
-  });
-
-  return invitee;
+const createInviteeService = async (data: InviteeCreate) => {
+  return createInviteeInDatabase(data);
 };
 
-export default { createInvitee };
+export default {
+  createInviteeService,
+};

@@ -10,7 +10,7 @@ const generateChargeService = async (expiracao, original, chave, solicitacaoPaga
     try {
         // Cria um usuário convidado, se necessário
         if (isGuest && !payerId) {
-            const user = await userService_1.default.createGuestUser({ isGuest: true });
+            const user = await userService_1.default.createGuestUserService({ isGuest: true });
             payerId = user.id;
         }
         else if (!payerId) {

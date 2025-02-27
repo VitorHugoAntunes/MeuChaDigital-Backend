@@ -12,7 +12,7 @@ import {
   updateUserPhotoInDatabase,
 } from '../repositories/userRepository';
 
-const createUser = async (data: UserCreate) => {
+const createUserService = async (data: UserCreate) => {
   const existingUser = await findUserByEmail(data.email);
 
   if (existingUser) {
@@ -29,23 +29,23 @@ const createUser = async (data: UserCreate) => {
   return user;
 };
 
-const createGuestUser = async (data: GuestUserCreate) => {
+const createGuestUserService = async (data: GuestUserCreate) => {
   return createGuestUserInDatabase(data);
 };
 
-const getAllUsers = async () => {
+const getAllUsersService = async () => {
   return getAllUsersFromDatabase();
 };
 
-const getUserByEmail = async (email: string) => {
+const getUserByEmailService = async (email: string) => {
   return findUserByEmail(email);
 };
 
-const getUserById = async (id: string) => {
+const getUserByIdService = async (id: string) => {
   return findUserById(id);
 };
 
-const updateUser = async (id: string, data: UserCreate) => {
+const updateUserService = async (id: string, data: UserCreate) => {
   let photoId = undefined;
 
   if (data.photo) {
@@ -56,7 +56,7 @@ const updateUser = async (id: string, data: UserCreate) => {
   return updateUserInDatabase(id, data, photoId);
 };
 
-const deleteUser = async (id: string) => {
+const deleteUserService = async (id: string) => {
   const hasActiveLists = await hasActiveGiftLists(id);
 
   if (hasActiveLists) {
@@ -67,11 +67,11 @@ const deleteUser = async (id: string) => {
 };
 
 export default {
-  createUser,
-  createGuestUser,
-  getAllUsers,
-  getUserByEmail,
-  getUserById,
-  updateUser,
-  deleteUser,
+  createUserService,
+  createGuestUserService,
+  getAllUsersService,
+  getUserByEmailService,
+  getUserByIdService,
+  updateUserService,
+  deleteUserService,
 };

@@ -14,7 +14,7 @@ interface CreateInviteeParams {
 export const createInvitee = async (req: Request, res: Response) => {
   try {
     const { name, phone, email, additionalInvitees, observation, giftListId, status } = createInviteeSchema.parse(req.body);
-    const invitee = await InviteeService.createInvitee({ name, phone, email, additionalInvitees, observation, giftListId, status });
+    const invitee = await InviteeService.createInviteeService({ name, phone, email, additionalInvitees, observation, giftListId, status });
     res.status(201).json(invitee);
   } catch (error) {
     if (error instanceof ZodError) {

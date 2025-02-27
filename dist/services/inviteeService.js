@@ -1,19 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
-const createInvitee = async (data) => {
-    const invitee = await prisma.invitee.create({
-        data: {
-            name: data.name,
-            phone: data.phone,
-            email: data.email,
-            additionalInvitees: data.additionalInvitees,
-            observation: data.observation,
-            giftList: { connect: { id: data.giftListId } },
-            status: data.status,
-        },
-    });
-    return invitee;
+const inviteeRepository_1 = require("../repositories/inviteeRepository");
+const createInviteeService = async (data) => {
+    return (0, inviteeRepository_1.createInviteeInDatabase)(data);
 };
-exports.default = { createInvitee };
+exports.default = {
+    createInviteeService,
+};

@@ -10,7 +10,7 @@ const zod_1 = require("zod");
 const createInvitee = async (req, res) => {
     try {
         const { name, phone, email, additionalInvitees, observation, giftListId, status } = inviteeValidator_1.createInviteeSchema.parse(req.body);
-        const invitee = await inviteeService_1.default.createInvitee({ name, phone, email, additionalInvitees, observation, giftListId, status });
+        const invitee = await inviteeService_1.default.createInviteeService({ name, phone, email, additionalInvitees, observation, giftListId, status });
         res.status(201).json(invitee);
     }
     catch (error) {
