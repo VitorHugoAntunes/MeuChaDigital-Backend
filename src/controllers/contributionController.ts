@@ -8,7 +8,7 @@ export const createContribution = async (req: Request, res: Response) => {
 
     const formattedValue = Number(value);
 
-    const contribution = await ContributionService.createContribution({ value: formattedValue, message, txId });
+    const contribution = await ContributionService.createContributionService({ value: formattedValue, message, txId });
     console.log('Passou pelo controller de contribuição');
     res.status(201).json(contribution);
   } catch (error) {

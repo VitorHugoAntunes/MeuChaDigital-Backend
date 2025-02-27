@@ -9,7 +9,7 @@ const createContribution = async (req, res) => {
     try {
         const { txid: txId, valor: value, infoPagador: message } = req.body.pix[0];
         const formattedValue = Number(value);
-        const contribution = await contributionService_1.default.createContribution({ value: formattedValue, message, txId });
+        const contribution = await contributionService_1.default.createContributionService({ value: formattedValue, message, txId });
         console.log('Passou pelo controller de contribuição');
         res.status(201).json(contribution);
     }

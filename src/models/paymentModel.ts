@@ -1,3 +1,5 @@
+import { PaymentStatus } from "@prisma/client"
+
 export interface ChargeCreate {
   localId: string,
   txId: string,
@@ -14,7 +16,7 @@ export interface ChargeCreate {
 }
 
 export interface PaymentCreate {
-  status: string,
+  status: PaymentStatus,
   paymentMethod: string,
   pixKey: string,
   paymentDate: Date,

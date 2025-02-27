@@ -1,16 +1,9 @@
-import axios from 'axios';
-import { getEfiToken } from '../config/efi';
-import { env } from 'process';
-
-import { PaymentStatus, PrismaClient } from '@prisma/client';
 import { ChargeCreate, PaymentCreate } from '../models/paymentModel';
 import UserService from '../services/userService';
+import { createChargeInDatabase, createPaymentInDatabase } from '../repositories/paymentRepository';
+import EFIService from '../services/efiService';
 
-const prisma = new PrismaClient();
-
-const EFI_URL = env.EFI_URL || 'https://pix.api.efipay.com.br';
-
-const generateCharge = async (
+const generateChargeService = async (
   expiracao: number,
   original: string,
   chave: string,
@@ -19,101 +12,51 @@ const generateCharge = async (
   payerId?: string,
   isGuest?: boolean,
 ) => {
-  const credentials = await getEfiToken();
-
-  console.log(credentials);
-
-  const chargeData = {
-    calendario: {
-      expiracao: expiracao,
-    },
-    valor: {
-      original: original,
-    },
-    chave: chave,
-    solicitacaoPagador: solicitacaoPagador,
-  };
-
-  const config = {
-    httpsAgent: credentials.agent,
-    headers: {
-      Authorization: `Bearer ${credentials.token}`,
-      'Content-Type': 'application/json',
-    },
-  };
-
   try {
+    // Cria um usuário convidado, se necessário
     if (isGuest && !payerId) {
       const user = await UserService.createGuestUser({ isGuest: true });
       payerId = user.id;
     } else if (!payerId) {
-      return { error: 'PayerId não informado' };
+      throw new Error('PayerId não informado');
     }
 
-    const response = await axios.post(`${EFI_URL}/v2/cob`, chargeData, config);
-
-    console.log(response.data);
-
-    const qrCode = await axios.get(`${EFI_URL}/v2/loc/${response.data.loc.id}/qrcode`, config);
-
-    const charge: ChargeCreate = {
-      localId: String(response.data.loc.id), // Pois vem da EFI como number
-      txId: response.data.txid,
-      giftId: giftId,
-      payerId: payerId,
-      value: Number(response.data.valor.original), // Pois vem da EFI como string
-      paymentMethod: 'PIX',
-      pixKey: response.data.chave,
-      pixCopyAndPaste: response.data.pixCopiaECola,
-      qrCode: qrCode.data.imagemQrcode,
-      generatedAt: new Date(response.data.calendario.criacao),
-      // a expiracao vem em formato de segundos, exemplo: 3600 que da 1 hora
-      expirationDate: new Date(new Date().getTime() + (response.data.calendario.expiracao * 1000)),
+    const chargeData = {
+      calendario: { expiracao },
+      valor: { original },
+      chave,
+      solicitacaoPagador,
     };
 
-    try {
-      await prisma.charge.create({
-        data: {
-          ...charge,
-          giftId: giftId,
-	  payerId: payerId,
-        },
-      });
-    } catch (error) {
-      console.error(error);
+    const cobResponse = await EFIService.generatePixCharge(chargeData);
 
-      return { error: 'Erro ao salvar cobrança no banco de dados' };
-    }
+    const qrCodeResponse = await EFIService.getPixQrCode(cobResponse.loc.id);
 
-    return response.data;
+    const charge: ChargeCreate = {
+      localId: String(cobResponse.loc.id),
+      txId: cobResponse.txid,
+      giftId,
+      payerId,
+      value: Number(cobResponse.valor.original),
+      paymentMethod: 'PIX',
+      pixKey: cobResponse.chave,
+      pixCopyAndPaste: cobResponse.pixCopiaECola,
+      qrCode: qrCodeResponse.imagemQrcode,
+      generatedAt: new Date(cobResponse.calendario.criacao),
+      expirationDate: new Date(new Date().getTime() + cobResponse.calendario.expiracao * 1000),
+    };
+
+    await createChargeInDatabase(charge);
+
+    return cobResponse;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error(error.response?.data || error.message);
-      return { error: error.response?.data || 'Erro na requisição' };
-    } else {
-      console.error(error);
-      return { error: 'Erro desconhecido' };
-    }
+    console.error(error);
+    throw new Error('Erro ao gerar cobrança');
   }
 };
 
-const createPayment = async (data: PaymentCreate) => {
+const createPaymentService = async (data: PaymentCreate) => {
+  return createPaymentInDatabase(data);
+};
 
-  const payment = await prisma.payment.create({
-    data: {
-      status: data.status as PaymentStatus,
-      paymentMethod: data.paymentMethod,
-      pixKey: data.pixKey,
-      paymentDate: data.paymentDate,
-      contribution: {
-        connect: {
-          id: data.contributionId,
-        },
-      },
-    },
-  });
-
-  return payment;
-}
-
-export default { generateCharge, createPayment };
+export default { generateChargeService, createPaymentService };
