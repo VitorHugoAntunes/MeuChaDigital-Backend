@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGiftFromDatabase = exports.updateGiftInDatabase = exports.getGiftByIdFromDatabase = exports.getAllGiftsFromDatabase = exports.createGiftInDatabase = void 0;
+exports.deleteGiftFromDatabase = exports.updateGiftInDatabase = exports.getGiftBySlugFromDatabase = exports.getAllGiftsBySlugFromDatabase = exports.getGiftByIdFromDatabase = exports.getAllGiftsFromDatabase = exports.createGiftInDatabase = void 0;
 const client_1 = require("@prisma/client");
+const giftListRepository_1 = require("./giftListRepository");
 const prisma = new client_1.PrismaClient();
 const createGiftInDatabase = async (data) => {
     return prisma.gift.create({
@@ -28,6 +29,28 @@ const getGiftByIdFromDatabase = async (id) => {
     });
 };
 exports.getGiftByIdFromDatabase = getGiftByIdFromDatabase;
+const getAllGiftsBySlugFromDatabase = async (slug) => {
+    const giftList = await (0, giftListRepository_1.getGiftListBySlugInDatabase)(slug);
+    if (!giftList) {
+        return null;
+    }
+    return prisma.gift.findMany({
+        where: { giftListId: giftList.id },
+        include: { photo: true },
+    });
+};
+exports.getAllGiftsBySlugFromDatabase = getAllGiftsBySlugFromDatabase;
+const getGiftBySlugFromDatabase = async (slug, giftId) => {
+    const giftList = await (0, giftListRepository_1.getGiftListBySlugInDatabase)(slug);
+    if (!giftList) {
+        return null;
+    }
+    return prisma.gift.findUnique({
+        where: { id: giftId },
+        include: { photo: true },
+    });
+};
+exports.getGiftBySlugFromDatabase = getGiftBySlugFromDatabase;
 const updateGiftInDatabase = async (id, data, photoId) => {
     return prisma.gift.update({
         where: { id },

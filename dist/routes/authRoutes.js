@@ -6,11 +6,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const passport_1 = __importDefault(require("passport"));
 const router = (0, express_1.Router)();
-router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }), (req, res) => {
+    if (req.user) {
+        res.cookie("user", req.user, { httpOnly: true, secure: false });
+    }
+});
 router.get('/google/callback', passport_1.default.authenticate('google', {
-    successRedirect: '/protected',
+    successRedirect: 'http://localhost:3000/lists',
     failureRedirect: '/auth/failure',
+    passReqToCallback: true,
+    authInfo: true,
 }));
+router.get("/user", (req, res) => {
+    if (!req.user) {
+        res.status(401).json({ error: "Usuário não autenticado" });
+    }
+    res.json(req.user);
+});
 router.get('/auth/failure', (_req, res) => {
     res.send('Authentication failed');
 });

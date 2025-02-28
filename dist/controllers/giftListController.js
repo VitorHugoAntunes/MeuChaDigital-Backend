@@ -10,8 +10,8 @@ const zod_1 = require("zod");
 const createGiftList = async (req, res) => {
     try {
         const parsedGifts = req.body.gifts ? JSON.parse(req.body.gifts) : [];
-        const { userId, type, name, slug, eventDate, description, shareableLink, status } = giftListValidator_1.createGiftListSchema.parse({ ...req.body, gifts: parsedGifts });
-        const giftList = await giftListService_1.default.createGiftListService({ userId, type, name, slug, eventDate, description, shareableLink, status, gifts: parsedGifts }, req, res);
+        const { userId, type, name, slug, eventDate, description, status } = giftListValidator_1.createGiftListSchema.parse({ ...req.body, gifts: parsedGifts });
+        const giftList = await giftListService_1.default.createGiftListService({ userId, type, name, slug, eventDate, description, status, gifts: parsedGifts }, req, res);
         res.status(201).json({ message: 'Lista de presentes criada com sucesso', giftList });
     }
     catch (error) {

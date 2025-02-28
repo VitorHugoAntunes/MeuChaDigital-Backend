@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { GiftCreate, GiftUpdate } from '../models/giftModel';
+import { getGiftListBySlugInDatabase } from './giftListRepository';
 
 const prisma = new PrismaClient();
 
@@ -24,6 +25,32 @@ export const getAllGiftsFromDatabase = async () => {
 export const getGiftByIdFromDatabase = async (id: string) => {
   return prisma.gift.findUnique({
     where: { id },
+    include: { photo: true },
+  });
+};
+
+export const getAllGiftsBySlugFromDatabase = async (slug: string) => {
+  const giftList = await getGiftListBySlugInDatabase(slug);
+
+  if (!giftList) {
+    return null;
+  }
+
+  return prisma.gift.findMany({
+    where: { giftListId: giftList.id },
+    include: { photo: true },
+  });
+}
+
+export const getGiftBySlugFromDatabase = async (slug: string, giftId: string) => {
+  const giftList = await getGiftListBySlugInDatabase(slug);
+
+  if (!giftList) {
+    return null;
+  }
+
+  return prisma.gift.findUnique({
+    where: { id: giftId },
     include: { photo: true },
   });
 };

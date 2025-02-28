@@ -25,7 +25,6 @@ export interface GiftListCreate {
   description?: string;
   banner?: string;
   moments_images?: string[];
-  shareableLink?: string;
   userId: string;
   status: "ACTIVE" | "INACTIVE";
   gifts: GiftCreate[];

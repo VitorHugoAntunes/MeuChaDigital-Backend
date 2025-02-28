@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { GiftListCreate, GiftListUpdate } from "models/giftListModel";
+import { formatSlug } from "../utils/formatSlug";
 
 const prisma = new PrismaClient();
 
@@ -7,11 +8,11 @@ const createGiftListInDatabase = async (data: GiftListCreate) => {
   return prisma.giftList.create({
     data: {
       name: data.name,
-      slug: data.slug,
+      slug: formatSlug(data.slug),
       type: data.type,
       eventDate: new Date(data.eventDate),
       description: data.description,
-      shareableLink: data.shareableLink ?? '',
+      shareableLink: `https://${formatSlug(data.slug)}.meuchadigital.com/invitation`,
       userId: data.userId,
       status: data.status,
     },
@@ -45,6 +46,13 @@ const getAllGiftListsInDatabase = async () => {
 const getGiftListByIdInDatabase = async (id: string) => {
   return await prisma.giftList.findUnique({
     where: { id },
+    include: { banner: true, momentsImages: true },
+  });
+};
+
+const getGiftListBySlugInDatabase = async (slug: string) => {
+  return await prisma.giftList.findUnique({
+    where: { slug },
     include: { banner: true, momentsImages: true },
   });
 };
@@ -86,4 +94,13 @@ const deleteGiftListFromDatabase = async (id: string) => {
   return await prisma.giftList.delete({ where: { id } });
 };
 
-export { createGiftListInDatabase, updateGiftListWithImages, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, hasActiveGiftLists, deleteGiftListFromDatabase };
+export {
+  createGiftListInDatabase,
+  updateGiftListWithImages,
+  getAllGiftListsInDatabase,
+  getGiftListByIdInDatabase,
+  updateGiftListInDatabase,
+  getGiftListBySlugInDatabase,
+  hasActiveGiftLists,
+  deleteGiftListFromDatabase
+};

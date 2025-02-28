@@ -7,11 +7,11 @@ export const createGiftList = async (req: Request, res: Response) => {
   try {
     const parsedGifts = req.body.gifts ? JSON.parse(req.body.gifts) : [];
 
-    const { userId, type, name, slug, eventDate, description, shareableLink, status } =
+    const { userId, type, name, slug, eventDate, description, status } =
       createGiftListSchema.parse({ ...req.body, gifts: parsedGifts });
 
     const giftList = await GiftListService.createGiftListService(
-      { userId, type, name, slug, eventDate, description, shareableLink, status, gifts: parsedGifts },
+      { userId, type, name, slug, eventDate, description, status, gifts: parsedGifts },
       req,
       res
     );

@@ -19,14 +19,12 @@ import { uploadMiddleware, validateUploadedFilesForGiftList, validateUploadedFil
 
 const router = Router();
 
-// GiftList routes
 router.get('/', getAllGiftLists);
 router.get('/:id', getGiftListById);
 router.post('/', uploadMiddleware, validateUploadedFilesForGiftList, createGiftList);
 router.put('/:id', uploadMiddleware, validateUploadedFilesForGiftList, updateGiftList);
 router.delete('/:id', deleteGiftList);
 
-// Gift routes
 router.get('/:id/gifts', getAllGifts);
 router.get('/:id/gifts/:giftId', getGiftById);
 router.post('/:id/gifts', uploadMiddleware, validateUploadedFilesForGift, createGift);

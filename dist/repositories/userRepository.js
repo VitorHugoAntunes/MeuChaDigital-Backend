@@ -8,7 +8,7 @@ const findUserByEmail = async (email) => {
 };
 exports.findUserByEmail = findUserByEmail;
 const findUserById = async (id) => {
-    return prisma.user.findUnique({ where: { id } });
+    return prisma.user.findUnique({ where: { id }, include: { photo: true } });
 };
 exports.findUserById = findUserById;
 const createUserInDatabase = async (data) => {
