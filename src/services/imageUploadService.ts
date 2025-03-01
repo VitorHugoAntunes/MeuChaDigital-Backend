@@ -4,7 +4,7 @@ import s3 from '../config/aws';
 import { PutObjectCommand, ListObjectsCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 
 const uploadLocalFilesToS3 = async (userId: string, giftListId: string, giftId?: string) => {
-  const uploadsDir = path.join(__dirname, '..', '..', 'uploads', userId);
+  const uploadsDir = path.join(__dirname, "..", "..", "uploads", userId);
 
   if (!fs.existsSync(uploadsDir)) {
     console.log(`A pasta de uploads para o usuário ${userId} não existe.`);
@@ -12,36 +12,42 @@ const uploadLocalFilesToS3 = async (userId: string, giftListId: string, giftId?:
   }
 
   const files = fs.readdirSync(uploadsDir);
-  const uploadedFilesUrls: string[] = [];
+  if (files.length === 0) {
+    console.log(`Nenhum arquivo encontrado na pasta de uploads para o usuário ${userId}.`);
+    return [];
+  }
 
-  for (const file of files) {
+  const uploadPromises = files.map(async (file) => {
     const filePath = path.join(uploadsDir, file);
-    const fileStream = fs.createReadStream(filePath);
     const fileExtension = path.extname(file).toLowerCase();
     const baseName = path.basename(file, fileExtension);
 
-    const finalFileName = fileExtension === '.jpeg' || fileExtension === '.jpg'
-      ? file
-      : `${baseName}.jpeg`;
+    const finalFileName =
+      fileExtension === ".jpeg" || fileExtension === ".jpg" ? file : `${baseName}.jpeg`;
 
     const uploadParams = {
       Bucket: process.env.AWS_BUCKET_NAME!,
-      Key: giftId ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/${finalFileName}` : `uploads/${userId}/giftLists/${giftListId}/listsImages/${finalFileName}`, // path e nome do arquivo no S3
-      Body: fileStream,
-      ContentType: 'image/jpeg',
+      Key: giftId
+        ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/${finalFileName}`
+        : `uploads/${userId}/giftLists/${giftListId}/listsImages/${finalFileName}`,
+      Body: fs.createReadStream(filePath),
+      ContentType: "image/jpeg",
     };
 
     try {
       await s3.send(new PutObjectCommand(uploadParams));
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
-      uploadedFilesUrls.push(fileUrl);
-      console.log(`Upload concluído: ${fileUrl}`);
+      console.log(`✅ Upload concluído: ${fileUrl}`);
+
+      fs.unlinkSync(filePath);
+      return fileUrl;
     } catch (error) {
       console.error(`Erro ao fazer upload de ${file}:`, error);
-    } finally {
-      fs.unlinkSync(filePath);
+      return null;
     }
-  }
+  });
+
+  const uploadedFilesUrls = (await Promise.all(uploadPromises)).filter((url) => url !== null);
 
   return uploadedFilesUrls;
 };

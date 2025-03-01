@@ -7,22 +7,36 @@ const entityExistenceChecks_1 = require("../utils/entityExistenceChecks");
 const giftListRepository_1 = require("../repositories/giftListRepository");
 const imageRepository_1 = require("../repositories/imageRepository");
 const giftListRepository_2 = require("../repositories/giftListRepository");
+const perf_hooks_1 = require("perf_hooks");
 const createGiftListService = async (data, req, res) => {
+    const startTime = perf_hooks_1.performance.now();
+    console.time("Criar lista no banco");
     const giftList = await (0, giftListRepository_1.createGiftListInDatabase)(data);
+    console.timeEnd("Criar lista no banco");
     const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, giftList.id);
+    console.time("Processar Banner e Imagens");
     const bannerUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
     const momentsImagesUrls = uploadedFilesUrls.length > 1 ? uploadedFilesUrls.slice(1) : [];
-    const bannerId = await (0, imageRepository_1.processBanner)(bannerUrl, giftList.id);
-    const momentsImages = await (0, imageRepository_1.processMomentsImages)(momentsImagesUrls, giftList.id);
-    const updatedGiftList = await (0, giftListRepository_1.updateGiftListWithImages)(giftList.id, bannerId, momentsImages);
+    const [bannerId, momentsImages] = await Promise.all([
+        (0, imageRepository_1.processBanner)(bannerUrl, giftList.id),
+        (0, imageRepository_1.processMomentsImages)(momentsImagesUrls, giftList.id),
+    ]);
+    console.timeEnd("Upload para S3, Processar Banner e Imagens");
+    console.time("Limpar diretório de uploads");
     (0, cleanUploadDirectory_1.cleanUploadDirectory)(req.body.userId);
-    return updatedGiftList;
+    console.timeEnd("Limpar diretório de uploads");
+    const endTime = perf_hooks_1.performance.now();
+    console.log(`createGiftListService demorou ${(endTime - startTime).toFixed(2)}ms`);
+    return giftList;
 };
 const getAllGiftListsService = async () => {
     return await (0, giftListRepository_1.getAllGiftListsInDatabase)();
 };
 const getGiftListByIdService = async (id) => {
     return await (0, giftListRepository_1.getGiftListByIdInDatabase)(id);
+};
+const getAllGiftListsByUserIdService = async (userId) => {
+    return await (0, giftListRepository_1.getAllGiftListByUserIdInDatabase)(userId);
 };
 const updateGiftListService = async (id, data, req, res) => {
     try {
@@ -58,6 +72,7 @@ exports.default = {
     createGiftListService,
     getAllGiftListsService,
     getGiftListByIdService,
+    getAllGiftListsByUserIdService,
     updateGiftListService,
     checkUserHasActiveGiftLists,
     deleteGiftList

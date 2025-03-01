@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGiftList = exports.updateGiftList = exports.getGiftListById = exports.getAllGiftLists = exports.createGiftList = void 0;
+exports.deleteGiftList = exports.updateGiftList = exports.getAllGiftListsByUserId = exports.getGiftListById = exports.getAllGiftLists = exports.createGiftList = void 0;
 const giftListService_1 = __importDefault(require("../services/giftListService"));
 const giftListValidator_1 = require("../validators/giftListValidator");
 const zod_1 = require("zod");
@@ -35,6 +35,12 @@ const getGiftListById = async (req, res) => {
     }
 };
 exports.getGiftListById = getGiftListById;
+const getAllGiftListsByUserId = async (req, res) => {
+    const userId = req.params.userId;
+    const giftLists = await giftListService_1.default.getAllGiftListsByUserIdService(userId);
+    res.json(giftLists);
+};
+exports.getAllGiftListsByUserId = getAllGiftListsByUserId;
 const updateGiftList = async (req, res) => {
     const id = req.params.id;
     try {

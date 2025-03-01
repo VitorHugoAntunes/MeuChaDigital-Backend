@@ -38,6 +38,12 @@ export const getGiftListById = async (req: Request, res: Response) => {
   }
 }
 
+export const getAllGiftListsByUserId = async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  const giftLists = await GiftListService.getAllGiftListsByUserIdService(userId);
+  res.json(giftLists);
+};
+
 export const updateGiftList = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {

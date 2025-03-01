@@ -50,10 +50,24 @@ const getGiftListByIdInDatabase = async (id: string) => {
   });
 };
 
+const getAllGiftListByUserIdInDatabase = async (userId: string) => {
+  const giftLists = await prisma.giftList.findMany({
+    where: { userId },
+    include: {
+      banner: true,
+      _count: {
+        select: { gifts: true },
+      },
+    },
+  });
+
+  return giftLists;
+};
+
 const getGiftListBySlugInDatabase = async (slug: string) => {
   return await prisma.giftList.findUnique({
     where: { slug },
-    include: { banner: true, momentsImages: true },
+    include: { banner: true, momentsImages: true, gifts: true },
   });
 };
 
@@ -99,6 +113,7 @@ export {
   updateGiftListWithImages,
   getAllGiftListsInDatabase,
   getGiftListByIdInDatabase,
+  getAllGiftListByUserIdInDatabase,
   updateGiftListInDatabase,
   getGiftListBySlugInDatabase,
   hasActiveGiftLists,

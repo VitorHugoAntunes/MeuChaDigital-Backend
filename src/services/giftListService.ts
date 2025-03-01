@@ -3,27 +3,39 @@ import { uploadLocalFilesToS3, deleteS3Files, uploadNewImages, deleteOldImagesFr
 import { updateBanner, updateMomentsImages } from './imageService';
 import { cleanUploadDirectory } from '../utils/cleanUploadDirectory';
 import { validateGiftListExists } from '../utils/entityExistenceChecks';
-import { createGiftListInDatabase, deleteGiftListFromDatabase, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, updateGiftListWithImages } from '../repositories/giftListRepository';
+import { createGiftListInDatabase, deleteGiftListFromDatabase, getAllGiftListByUserIdInDatabase, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, updateGiftListWithImages } from '../repositories/giftListRepository';
 import { processBanner, processMomentsImages } from '../repositories/imageRepository';
 import { hasActiveGiftLists } from '../repositories/giftListRepository';
 
+import { performance } from "perf_hooks";
+
 const createGiftListService = async (data: GiftListCreate, req: any, res: any) => {
+  const startTime = performance.now();
+
+  console.time("Criar lista no banco");
   const giftList = await createGiftListInDatabase(data);
+  console.timeEnd("Criar lista no banco");
 
   const uploadedFilesUrls = await uploadLocalFilesToS3(req.body.userId, giftList.id);
 
+  console.time("Processar Banner e Imagens");
   const bannerUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
   const momentsImagesUrls = uploadedFilesUrls.length > 1 ? uploadedFilesUrls.slice(1) : [];
 
-  const bannerId = await processBanner(bannerUrl, giftList.id);
+  const [bannerId, momentsImages] = await Promise.all([
+    processBanner(bannerUrl, giftList.id),
+    processMomentsImages(momentsImagesUrls, giftList.id),
+  ]);
+  console.timeEnd("Upload para S3, Processar Banner e Imagens");
 
-  const momentsImages = await processMomentsImages(momentsImagesUrls, giftList.id);
-
-  const updatedGiftList = await updateGiftListWithImages(giftList.id, bannerId, momentsImages);
-
+  console.time("Limpar diretório de uploads");
   cleanUploadDirectory(req.body.userId);
+  console.timeEnd("Limpar diretório de uploads");
 
-  return updatedGiftList;
+  const endTime = performance.now();
+  console.log(`createGiftListService demorou ${(endTime - startTime).toFixed(2)}ms`);
+
+  return giftList;
 };
 
 const getAllGiftListsService = async () => {
@@ -33,6 +45,10 @@ const getAllGiftListsService = async () => {
 const getGiftListByIdService = async (id: string) => {
   return await getGiftListByIdInDatabase(id);
 };
+
+const getAllGiftListsByUserIdService = async (userId: string) => {
+  return await getAllGiftListByUserIdInDatabase(userId);
+}
 
 const updateGiftListService = async (id: string, data: GiftListUpdate, req: any, res: any) => {
   try {
@@ -80,6 +96,7 @@ export default {
   createGiftListService,
   getAllGiftListsService,
   getGiftListByIdService,
+  getAllGiftListsByUserIdService,
   updateGiftListService,
   checkUserHasActiveGiftLists,
   deleteGiftList
