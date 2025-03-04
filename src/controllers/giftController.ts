@@ -24,9 +24,30 @@ export const getAllGifts = async (req: Request, res: Response) => {
   res.json(gifts);
 };
 
+export const getAllGiftsByGiftListSlug = async (req: Request, res: Response) => {
+  const slug = req.params.slug;
+  const gifts = await GiftService.getAllGiftsByGiftListSlugService(slug);
+  if (gifts) {
+    res.json(gifts);
+  } else {
+    res.status(404).json({ error: 'Presentes não encontrados' });
+  }
+}
+
 export const getGiftById = async (req: Request, res: Response) => {
   const id = req.params.giftId;
   const gift = await GiftService.getGiftByIdService(id);
+  if (gift) {
+    res.json(gift);
+  } else {
+    res.status(404).json({ error: 'Presente não encontrado' });
+  }
+};
+
+export const getGiftByGiftListSlug = async (req: Request, res: Response) => {
+  const slug = req.params.slug;
+  const giftId = req.params.giftId;
+  const gift = await GiftService.getGiftByGiftListSlugService(slug, giftId);
   if (gift) {
     res.json(gift);
   } else {

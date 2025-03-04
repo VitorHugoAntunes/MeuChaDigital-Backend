@@ -8,12 +8,12 @@ const getGiftListBySubdomain = async (subdomain) => {
 };
 exports.getGiftListBySubdomain = getGiftListBySubdomain;
 const getAllGiftsBySubdomain = async (subdomain) => {
-    const gifts = await (0, giftRepository_1.getAllGiftsBySlugFromDatabase)(subdomain);
+    const gifts = await (0, giftRepository_1.getAllGiftsByGiftListSlugFromDatabase)(subdomain);
     return gifts;
 };
 exports.getAllGiftsBySubdomain = getAllGiftsBySubdomain;
 const getGiftByIdFromSubdomain = async (subdomain, giftId) => {
-    const gift = await (0, giftRepository_1.getGiftBySlugFromDatabase)(subdomain, giftId);
+    const gift = await (0, giftRepository_1.getGiftByGiftListSlugFromDatabase)(subdomain, giftId);
     return gift;
 };
 exports.getGiftByIdFromSubdomain = getGiftByIdFromSubdomain;

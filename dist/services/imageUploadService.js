@@ -36,16 +36,14 @@ const uploadLocalFilesToS3 = async (userId, giftListId, giftId) => {
             await aws_1.default.send(new client_s3_1.PutObjectCommand(uploadParams));
             const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
             console.log(`✅ Upload concluído: ${fileUrl}`);
-            // Remove o arquivo local após o sucesso do upload
             fs_1.default.unlinkSync(filePath);
             return fileUrl;
         }
         catch (error) {
-            console.error(`❌ Erro ao fazer upload de ${file}:`, error);
-            return null; // Retorna null para indicar falha no upload
+            console.error(`Erro ao fazer upload de ${file}:`, error);
+            return null;
         }
     });
-    // Aguarda todos os uploads serem concluídos em paralelo
     const uploadedFilesUrls = (await Promise.all(uploadPromises)).filter((url) => url !== null);
     return uploadedFilesUrls;
 };

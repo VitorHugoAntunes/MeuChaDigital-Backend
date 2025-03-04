@@ -5,6 +5,8 @@ import {
   createGiftInDatabase,
   getAllGiftsFromDatabase,
   getGiftByIdFromDatabase,
+  getAllGiftsByGiftListSlugFromDatabase,
+  getGiftByGiftListSlugFromDatabase,
   updateGiftInDatabase,
   deleteGiftFromDatabase,
 } from '../repositories/giftRepository';
@@ -32,8 +34,16 @@ const getAllGiftsService = async () => {
   return await getAllGiftsFromDatabase();
 };
 
+const getAllGiftsByGiftListSlugService = async (slug: string) => {
+  return await getAllGiftsByGiftListSlugFromDatabase(slug);
+};
+
 const getGiftByIdService = async (id: string) => {
   return await getGiftByIdFromDatabase(id);
+};
+
+const getGiftByGiftListSlugService = async (slug: string, giftId: string) => {
+  return await getGiftByGiftListSlugFromDatabase(slug, giftId);
 };
 
 const updateGiftService = async (userId: string, giftListId: string, giftId: string, data: GiftUpdate, req: any) => {
@@ -84,7 +94,9 @@ const deleteGiftService = async (id: string) => {
 export default {
   createGiftService,
   getAllGiftsService,
+  getAllGiftsByGiftListSlugService,
   getGiftByIdService,
+  getGiftByGiftListSlugService,
   updateGiftService,
   deleteGiftService,
 };

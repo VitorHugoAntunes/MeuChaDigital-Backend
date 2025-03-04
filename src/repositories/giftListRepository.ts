@@ -71,6 +71,12 @@ const getGiftListBySlugInDatabase = async (slug: string) => {
   });
 };
 
+const getGiftListBySlugWithoutImagesInDatabase = async (slug: string) => {
+  return await prisma.giftList.findUnique({
+    where: { slug },
+  });
+}
+
 const updateGiftListInDatabase = async (
   id: string,
   data: GiftListUpdate,
@@ -116,6 +122,7 @@ export {
   getAllGiftListByUserIdInDatabase,
   updateGiftListInDatabase,
   getGiftListBySlugInDatabase,
+  getGiftListBySlugWithoutImagesInDatabase,
   hasActiveGiftLists,
   deleteGiftListFromDatabase
 };

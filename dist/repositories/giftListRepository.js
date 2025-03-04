@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGiftListFromDatabase = exports.hasActiveGiftLists = exports.getGiftListBySlugInDatabase = exports.updateGiftListInDatabase = exports.getAllGiftListByUserIdInDatabase = exports.getGiftListByIdInDatabase = exports.getAllGiftListsInDatabase = exports.updateGiftListWithImages = exports.createGiftListInDatabase = void 0;
+exports.deleteGiftListFromDatabase = exports.hasActiveGiftLists = exports.getGiftListBySlugWithoutImagesInDatabase = exports.getGiftListBySlugInDatabase = exports.updateGiftListInDatabase = exports.getAllGiftListByUserIdInDatabase = exports.getGiftListByIdInDatabase = exports.getAllGiftListsInDatabase = exports.updateGiftListWithImages = exports.createGiftListInDatabase = void 0;
 const client_1 = require("@prisma/client");
 const formatSlug_1 = require("../utils/formatSlug");
 const prisma = new client_1.PrismaClient();
@@ -70,6 +70,12 @@ const getGiftListBySlugInDatabase = async (slug) => {
     });
 };
 exports.getGiftListBySlugInDatabase = getGiftListBySlugInDatabase;
+const getGiftListBySlugWithoutImagesInDatabase = async (slug) => {
+    return await prisma.giftList.findUnique({
+        where: { slug },
+    });
+};
+exports.getGiftListBySlugWithoutImagesInDatabase = getGiftListBySlugWithoutImagesInDatabase;
 const updateGiftListInDatabase = async (id, data, bannerId, momentsImages) => {
     return await prisma.giftList.update({
         where: { id },

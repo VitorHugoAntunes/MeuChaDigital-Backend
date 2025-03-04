@@ -3,6 +3,8 @@ import {
   createGift,
   getGiftById,
   getAllGifts,
+  getAllGiftsByGiftListSlug,
+  getGiftByGiftListSlug,
   updateGift,
   deleteGift
 } from '../controllers/giftController';
@@ -30,7 +32,9 @@ router.delete('/:id', deleteGiftList);
 
 // Gift routes
 router.get('/:id/gifts', getAllGifts);
+router.get('/slug/:slug/gifts', getAllGiftsByGiftListSlug);
 router.get('/:id/gifts/:giftId', getGiftById);
+router.get('/slug/:slug/gifts/:giftId', getGiftByGiftListSlug);
 router.post('/:id/gifts', uploadMiddleware, validateUploadedFilesForGift, createGift);
 router.put('/:id/gifts/:giftId', uploadMiddleware, validateUploadedFilesForGift, updateGift);
 router.delete('/:id/gifts/:giftId', deleteGift);

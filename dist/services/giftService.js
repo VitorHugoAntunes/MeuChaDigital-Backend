@@ -20,8 +20,14 @@ const createGiftService = async (data, req, res) => {
 const getAllGiftsService = async () => {
     return await (0, giftRepository_1.getAllGiftsFromDatabase)();
 };
+const getAllGiftsByGiftListSlugService = async (slug) => {
+    return await (0, giftRepository_1.getAllGiftsByGiftListSlugFromDatabase)(slug);
+};
 const getGiftByIdService = async (id) => {
     return await (0, giftRepository_1.getGiftByIdFromDatabase)(id);
+};
+const getGiftByGiftListSlugService = async (slug, giftId) => {
+    return await (0, giftRepository_1.getGiftByGiftListSlugFromDatabase)(slug, giftId);
 };
 const updateGiftService = async (userId, giftListId, giftId, data, req) => {
     try {
@@ -58,7 +64,9 @@ const deleteGiftService = async (id) => {
 exports.default = {
     createGiftService,
     getAllGiftsService,
+    getAllGiftsByGiftListSlugService,
     getGiftByIdService,
+    getGiftByGiftListSlugService,
     updateGiftService,
     deleteGiftService,
 };

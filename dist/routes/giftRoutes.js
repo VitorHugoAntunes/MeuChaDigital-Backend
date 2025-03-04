@@ -14,7 +14,9 @@ router.put('/:id', validateUploadFilesMiddleware_1.uploadMiddleware, validateUpl
 router.delete('/:id', giftListController_1.deleteGiftList);
 // Gift routes
 router.get('/:id/gifts', giftController_1.getAllGifts);
+router.get('/slug/:slug/gifts', giftController_1.getAllGiftsByGiftListSlug);
 router.get('/:id/gifts/:giftId', giftController_1.getGiftById);
+router.get('/slug/:slug/gifts/:giftId', giftController_1.getGiftByGiftListSlug);
 router.post('/:id/gifts', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGift, giftController_1.createGift);
 router.put('/:id/gifts/:giftId', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGift, giftController_1.updateGift);
 router.delete('/:id/gifts/:giftId', giftController_1.deleteGift);

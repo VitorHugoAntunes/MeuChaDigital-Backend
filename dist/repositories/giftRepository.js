@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGiftFromDatabase = exports.updateGiftInDatabase = exports.getGiftBySlugFromDatabase = exports.getAllGiftsBySlugFromDatabase = exports.getGiftByIdFromDatabase = exports.getAllGiftsFromDatabase = exports.createGiftInDatabase = void 0;
+exports.deleteGiftFromDatabase = exports.updateGiftInDatabase = exports.getGiftByGiftListSlugFromDatabase = exports.getAllGiftsByGiftListSlugFromDatabase = exports.getGiftByIdFromDatabase = exports.getAllGiftsFromDatabase = exports.createGiftInDatabase = void 0;
 const client_1 = require("@prisma/client");
 const giftListRepository_1 = require("./giftListRepository");
 const prisma = new client_1.PrismaClient();
@@ -29,28 +29,31 @@ const getGiftByIdFromDatabase = async (id) => {
     });
 };
 exports.getGiftByIdFromDatabase = getGiftByIdFromDatabase;
-const getAllGiftsBySlugFromDatabase = async (slug) => {
-    const giftList = await (0, giftListRepository_1.getGiftListBySlugInDatabase)(slug);
+const getAllGiftsByGiftListSlugFromDatabase = async (slug) => {
+    const giftList = await (0, giftListRepository_1.getGiftListBySlugWithoutImagesInDatabase)(slug);
     if (!giftList) {
         return null;
     }
-    return prisma.gift.findMany({
-        where: { giftListId: giftList.id },
-        include: { photo: true },
-    });
+    return {
+        giftList,
+        gifts: await prisma.gift.findMany({
+            where: { giftListId: giftList.id },
+            include: { photo: true, category: true },
+        }),
+    };
 };
-exports.getAllGiftsBySlugFromDatabase = getAllGiftsBySlugFromDatabase;
-const getGiftBySlugFromDatabase = async (slug, giftId) => {
+exports.getAllGiftsByGiftListSlugFromDatabase = getAllGiftsByGiftListSlugFromDatabase;
+const getGiftByGiftListSlugFromDatabase = async (slug, giftId) => {
     const giftList = await (0, giftListRepository_1.getGiftListBySlugInDatabase)(slug);
     if (!giftList) {
         return null;
     }
     return prisma.gift.findUnique({
         where: { id: giftId },
-        include: { photo: true },
+        include: { photo: true, category: true, list: true },
     });
 };
-exports.getGiftBySlugFromDatabase = getGiftBySlugFromDatabase;
+exports.getGiftByGiftListSlugFromDatabase = getGiftByGiftListSlugFromDatabase;
 const updateGiftInDatabase = async (id, data, photoId) => {
     return prisma.gift.update({
         where: { id },

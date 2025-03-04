@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGift = exports.updateGift = exports.getGiftById = exports.getAllGifts = exports.createGift = void 0;
+exports.deleteGift = exports.updateGift = exports.getGiftByGiftListSlug = exports.getGiftById = exports.getAllGiftsByGiftListSlug = exports.getAllGifts = exports.createGift = void 0;
 const giftService_1 = __importDefault(require("../services/giftService"));
 const giftValidator_1 = require("../validators/giftValidator");
 const zod_1 = require("zod");
@@ -29,6 +29,17 @@ const getAllGifts = async (req, res) => {
     res.json(gifts);
 };
 exports.getAllGifts = getAllGifts;
+const getAllGiftsByGiftListSlug = async (req, res) => {
+    const slug = req.params.slug;
+    const gifts = await giftService_1.default.getAllGiftsByGiftListSlugService(slug);
+    if (gifts) {
+        res.json(gifts);
+    }
+    else {
+        res.status(404).json({ error: 'Presentes não encontrados' });
+    }
+};
+exports.getAllGiftsByGiftListSlug = getAllGiftsByGiftListSlug;
 const getGiftById = async (req, res) => {
     const id = req.params.giftId;
     const gift = await giftService_1.default.getGiftByIdService(id);
@@ -40,6 +51,18 @@ const getGiftById = async (req, res) => {
     }
 };
 exports.getGiftById = getGiftById;
+const getGiftByGiftListSlug = async (req, res) => {
+    const slug = req.params.slug;
+    const giftId = req.params.giftId;
+    const gift = await giftService_1.default.getGiftByGiftListSlugService(slug, giftId);
+    if (gift) {
+        res.json(gift);
+    }
+    else {
+        res.status(404).json({ error: 'Presente não encontrado' });
+    }
+};
+exports.getGiftByGiftListSlug = getGiftByGiftListSlug;
 const updateGift = async (req, res) => {
     const userId = req.body.userId;
     const giftListId = req.params.id;
