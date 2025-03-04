@@ -4,9 +4,10 @@
   "main": "server.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/server.ts",
+    "dev": "cross-env NODE_ENV=development nodemon --exec ts-node -r dotenv/config src/server.ts dotenv_config_path=.env.development",
+    "prod": "cross-env NODE_ENV=production node -r dotenv/config dist/server.js dotenv_config_path=.env.production",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "cross-env NODE_ENV=production node -r dotenv/config dist/server.js dotenv_config_path=.env.production"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.750.0",
@@ -15,7 +16,6 @@
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-session": "^1.17.2",
     "mercadopago": "^2.3.0",
@@ -39,6 +39,8 @@
     "@types/node": "^22.13.0",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth2": "^0.1.10",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.7",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
