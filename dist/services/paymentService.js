@@ -45,7 +45,10 @@ const generateChargeService = async (expiracao, original, chave, solicitacaoPaga
         throw new Error('Erro ao gerar cobrança');
     }
 };
+const getChargeService = async (localId, giftId) => {
+    return (0, paymentRepository_1.getChargeInDatabase)(localId, giftId);
+};
 const createPaymentService = async (data) => {
     return (0, paymentRepository_1.createPaymentInDatabase)(data);
 };
-exports.default = { generateChargeService, createPaymentService };
+exports.default = { generateChargeService, createPaymentService, getChargeService };

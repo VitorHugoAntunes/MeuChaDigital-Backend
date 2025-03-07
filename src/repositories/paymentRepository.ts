@@ -22,6 +22,19 @@ export const createChargeInDatabase = async (data: ChargeCreate) => {
   });
 };
 
+export const getChargeInDatabase = async (id: string, giftId: string) => {
+  return prisma.charge.findFirst({
+    where: {
+      localId: id,
+      giftId,
+      expirationDate: {
+        gte: new Date(),
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
 export const createPaymentInDatabase = async (data: PaymentCreate) => {
   return prisma.payment.create({
     data: {
@@ -41,4 +54,5 @@ export const createPaymentInDatabase = async (data: PaymentCreate) => {
 export default {
   createChargeInDatabase,
   createPaymentInDatabase,
+  getChargeInDatabase,
 };

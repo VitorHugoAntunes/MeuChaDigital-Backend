@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getEfiToken } from '../config/efi';
-import { createCharge } from '../controllers/paymentController';
+import { createCharge, getCharge } from '../controllers/paymentController';
 
 const router = Router();
 
@@ -41,5 +41,7 @@ router.post('/webhook(/pix)?', (req: Request, res: Response) => {
 });
 
 router.post('/charges', createCharge);
+
+router.get('/charges/:id', getCharge);
 
 export default router;

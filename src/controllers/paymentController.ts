@@ -16,3 +16,22 @@ export const createPayment = async (req: Request, res: Response) => {
 
   res.json(payment);
 };
+
+export const getCharge = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { giftId } = req.query;
+
+  try {
+    const charge = await PaymentService.getChargeService(id, giftId as string);
+
+    if (!charge) {
+      res.status(404).json({ error: 'Cobrança não encontrada ou expirada' });
+      return;
+    }
+
+    res.json(charge);
+  } catch (error) {
+    console.error('Erro ao buscar cobrança:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+};

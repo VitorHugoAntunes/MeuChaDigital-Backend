@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
-import session from 'express-session';
+import session from 'cookie-session';
 import passport from 'passport';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
@@ -17,10 +17,12 @@ import checkSubdomainMiddleware from './middlewares/checkSubdomainMiddleware';
 const app = express();
 
 app.use(session({
+  name: 'session',
   secret: 'cats',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false },
+  maxAge: 24 * 60 * 60 * 1000,
+  secure: false,
+  httpOnly: true,
+  sameSite: 'lax',
 }));
 
 app.use(cors({

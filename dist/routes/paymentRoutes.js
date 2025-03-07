@@ -35,4 +35,5 @@ router.post('/webhook(/pix)?', (req, res) => {
     }
 });
 router.post('/charges', paymentController_1.createCharge);
+router.get('/charges/:id', paymentController_1.getCharge);
 exports.default = router;

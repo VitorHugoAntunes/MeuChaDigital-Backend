@@ -5,11 +5,13 @@ import { Request } from 'express';
 import { Profile } from 'passport';
 
 import dotenv from 'dotenv';
+import { findUserById } from "../repositories/userRepository";
 dotenv.config();
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
+// const GOOGLE_CALLBACK_URL = 'http://localhost:8000/auth/google/callback';
 
 console.log(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL);
 
@@ -37,7 +39,7 @@ passport.use(
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL: GOOGLE_CALLBACK_URL,
-      passReqToCallback: true
+      passReqToCallback: true, // Ainda útil se quiser acesso ao req
     },
     async (
       _req: Request,
@@ -54,24 +56,25 @@ passport.use(
           photo: profile.picture,
         };
 
-        if (_req.res) {
-          const user = await createUser(userParams);
-          return done(null, user);
-        } else {
-          throw new Error("Response object is undefined");
-        }
+        const user = await createUser(userParams);
+        return done(null, user);
       } catch (error) {
         console.error("Erro ao criar o usuário:", error);
-        return done(error, null); // Passa o erro para o Passport
+        return done(error, null);
       }
     }
   )
 );
 
-passport.serializeUser(function (user: any, done: (err: any, id?: any) => void) {
+passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(function (id: string, done: (err: any, user?: any) => void) {
-  done(null, { id });
+passport.deserializeUser(async (id: string, done) => {
+  try {
+    const user = await findUserById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });

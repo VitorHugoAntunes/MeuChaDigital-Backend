@@ -26,16 +26,11 @@ router.get("/user", (req, res) => {
 router.get('/auth/failure', (_req, res) => {
     res.send('Authentication failed');
 });
-router.get('/logout', (req, res, next) => {
-    req.logout((err) => {
-        if (err)
-            return next(err);
-        req.session.destroy(() => {
-            res.send(`
-        <h1>Logout efetuado</h1>
-        <a href="/">Voltar para o inicio</a>
-        `);
-        });
-    });
+router.get('/logout', (req, res) => {
+    // Define req.session como null usando uma afirmação de tipo
+    req.session = null;
+    res.clearCookie('session');
+    res.clearCookie('session.sig');
+    res.send("Logout efetuado com sucesso!");
 });
 exports.default = router;

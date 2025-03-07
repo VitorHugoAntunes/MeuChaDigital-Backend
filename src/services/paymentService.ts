@@ -1,6 +1,6 @@
 import { ChargeCreate, PaymentCreate } from '../models/paymentModel';
 import UserService from '../services/userService';
-import { createChargeInDatabase, createPaymentInDatabase } from '../repositories/paymentRepository';
+import { createChargeInDatabase, createPaymentInDatabase, getChargeInDatabase } from '../repositories/paymentRepository';
 import EFIService from '../services/efiService';
 
 const generateChargeService = async (
@@ -55,8 +55,12 @@ const generateChargeService = async (
   }
 };
 
+const getChargeService = async (localId: string, giftId: string) => {
+  return getChargeInDatabase(localId, giftId);
+};
+
 const createPaymentService = async (data: PaymentCreate) => {
   return createPaymentInDatabase(data);
 };
 
-export default { generateChargeService, createPaymentService };
+export default { generateChargeService, createPaymentService, getChargeService };
