@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const authRoutes_1 = __importDefault(require("./authRoutes"));
+const userRoutes_1 = __importDefault(require("./userRoutes"));
+const giftRoutes_1 = __importDefault(require("./giftRoutes"));
+const paymentRoutes_1 = __importDefault(require("./paymentRoutes"));
+const inviteeRoutes_1 = __importDefault(require("./inviteeRoutes"));
+const invitationRoutes_1 = __importDefault(require("./invitationRoutes"));
+const router = express_1.default.Router();
+router.use('/auth', authRoutes_1.default);
+router.use('/users', userRoutes_1.default);
+router.use('/lists', giftRoutes_1.default);
+router.use('/payments', paymentRoutes_1.default);
+router.use('/invitees', inviteeRoutes_1.default);
+router.use('/invitation', invitationRoutes_1.default);
+exports.default = router;

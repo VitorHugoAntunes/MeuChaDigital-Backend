@@ -4,26 +4,34 @@ import passport from 'passport';
 
 const router = Router();
 
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }), (req, res) => {
-  if (req.user) {
-    res.cookie("user", req.user, { httpOnly: true, secure: false });
-  }
-}
-);
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    successRedirect: 'http://localhost:3000/lists',
     failureRedirect: '/auth/failure',
     passReqToCallback: true,
     authInfo: true,
-  })
+  }),
+  (req, res) => {
+    if (req.user) {
+      res.cookie('user', JSON.stringify(req.user), {
+        domain: '.localhost',
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+      });
+    }
+
+    // Redireciona para a URL correta com base no host da requisição
+    const redirectUrl = `${req.protocol}://${req.get('host')}/lists`;
+    res.redirect(redirectUrl);
+  }
 );
 
-router.get("/user", (req, res) => {
+router.get('/user', (req, res) => {
   if (!req.user) {
-    res.status(401).json({ error: "Usuário não autenticado" });
+    return res.status(401).json({ error: 'Usuário não autenticado' }) as any;
   }
   res.json(req.user);
 });
@@ -33,13 +41,18 @@ router.get('/auth/failure', (_req, res) => {
 });
 
 router.get('/logout', (req: Request, res: Response) => {
-  // Define req.session como null usando uma afirmação de tipo
-  (req as any).session = null;
+  res.clearCookie('session', { domain: '.localhost', path: '/' });
+  res.clearCookie('session.sig', { domain: '.localhost', path: '/' });
+  res.clearCookie('user', { domain: '.localhost', path: '/' });
 
-  res.clearCookie('session');
-  res.clearCookie('session.sig');
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Erro ao destruir a sessão:', err);
+      return res.status(500).send('Erro ao efetuar logout');
+    }
 
-  res.send("Logout efetuado com sucesso!");
+    res.send('Logout efetuado com sucesso!');
+  });
 });
 
 export default router;

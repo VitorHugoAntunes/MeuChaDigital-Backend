@@ -6,20 +6,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const passport_1 = __importDefault(require("passport"));
 const router = (0, express_1.Router)();
-router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }), (req, res) => {
-    if (req.user) {
-        res.cookie("user", req.user, { httpOnly: true, secure: false });
-    }
-});
+router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport_1.default.authenticate('google', {
-    successRedirect: 'http://localhost:3000/lists',
     failureRedirect: '/auth/failure',
     passReqToCallback: true,
     authInfo: true,
-}));
-router.get("/user", (req, res) => {
+}), (req, res) => {
+    if (req.user) {
+        res.cookie('user', JSON.stringify(req.user), {
+            domain: '.localhost',
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+        });
+    }
+    // Redireciona para a URL correta com base no host da requisição
+    const redirectUrl = `${req.protocol}://${req.get('host')}/lists`;
+    res.redirect(redirectUrl);
+});
+router.get('/user', (req, res) => {
     if (!req.user) {
-        res.status(401).json({ error: "Usuário não autenticado" });
+        return res.status(401).json({ error: 'Usuário não autenticado' });
     }
     res.json(req.user);
 });
@@ -27,10 +34,15 @@ router.get('/auth/failure', (_req, res) => {
     res.send('Authentication failed');
 });
 router.get('/logout', (req, res) => {
-    // Define req.session como null usando uma afirmação de tipo
-    req.session = null;
-    res.clearCookie('session');
-    res.clearCookie('session.sig');
-    res.send("Logout efetuado com sucesso!");
+    res.clearCookie('session', { domain: '.localhost', path: '/' });
+    res.clearCookie('session.sig', { domain: '.localhost', path: '/' });
+    res.clearCookie('user', { domain: '.localhost', path: '/' });
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Erro ao destruir a sessão:', err);
+            return res.status(500).send('Erro ao efetuar logout');
+        }
+        res.send('Logout efetuado com sucesso!');
+    });
 });
 exports.default = router;

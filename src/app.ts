@@ -2,12 +2,8 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import session from 'cookie-session';
 import passport from 'passport';
-import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
-import giftRoutes from './routes/giftRoutes';
-import paymentRoutes from './routes/paymentRoutes';
-import inviteeRoutes from './routes/inviteeRoutes';
-import invitationRoutes from './routes/invitationRoutes'; // Rotas de invitation (subdomínio)
+import routes from './routes/routes';
+
 import { createContribution } from './controllers/contributionController';
 import { isLoggedIn } from './middlewares/authMiddleware';
 import './config/passport';
@@ -26,13 +22,22 @@ app.use(session({
 }));
 
 app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
+  origin: (origin, callback) => {
+    if (!origin || /^https?:\/\/(.*\.)?localhost:3000$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Permite cookies e autenticação
 }));
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(getSubdomainMiddleware);
 app.use(checkSubdomainMiddleware);
+
+app.use('/api/v1', routes);
 
 // app.use((req, res, next) => {
 //   const isListRoute = req.path.startsWith("/list") || req.path.startsWith("/list/");
@@ -50,13 +55,7 @@ app.use(checkSubdomainMiddleware);
 
 app.use(express.json());
 
-// Outras rotas (sem subdomínio)
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
-app.use('/lists', giftRoutes);
-app.use('/payments', paymentRoutes);
-app.use('/invitees', inviteeRoutes);
-app.use('/invitation', invitationRoutes); // Rotas de invitation (subdomínio)
+
 
 // Rota de teste para webhook
 app.post('/test-webhook(/pix)?', async (req: Request, res: Response) => {

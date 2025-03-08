@@ -7,12 +7,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const cookie_session_1 = __importDefault(require("cookie-session"));
 const passport_1 = __importDefault(require("passport"));
-const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
-const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
-const giftRoutes_1 = __importDefault(require("./routes/giftRoutes"));
-const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
-const inviteeRoutes_1 = __importDefault(require("./routes/inviteeRoutes"));
-const invitationRoutes_1 = __importDefault(require("./routes/invitationRoutes")); // Rotas de invitation (subdomínio)
+const routes_1 = __importDefault(require("./routes/routes"));
 const contributionController_1 = require("./controllers/contributionController");
 require("./config/passport");
 const getSubdomainMiddleware_1 = __importDefault(require("./middlewares/getSubdomainMiddleware")); // Importe o middleware
@@ -27,13 +22,21 @@ app.use((0, cookie_session_1.default)({
     sameSite: 'lax',
 }));
 app.use((0, cors_1.default)({
-    origin: 'http://localhost:3000',
-    credentials: true,
+    origin: (origin, callback) => {
+        if (!origin || /^https?:\/\/(.*\.)?localhost:3000$/.test(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Permite cookies e autenticação
 }));
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
 app.use(getSubdomainMiddleware_1.default);
 app.use(checkSubdomainMiddleware_1.default);
+app.use('/api/v1', routes_1.default);
 // app.use((req, res, next) => {
 //   const isListRoute = req.path.startsWith("/list") || req.path.startsWith("/list/");
 //   const isUsersRoute = req.path.startsWith("/users");
@@ -47,13 +50,6 @@ app.use(checkSubdomainMiddleware_1.default);
 //   }
 // });
 app.use(express_1.default.json());
-// Outras rotas (sem subdomínio)
-app.use('/auth', authRoutes_1.default);
-app.use('/users', userRoutes_1.default);
-app.use('/lists', giftRoutes_1.default);
-app.use('/payments', paymentRoutes_1.default);
-app.use('/invitees', inviteeRoutes_1.default);
-app.use('/invitation', invitationRoutes_1.default); // Rotas de invitation (subdomínio)
 // Rota de teste para webhook
 app.post('/test-webhook(/pix)?', async (req, res) => {
     try {
