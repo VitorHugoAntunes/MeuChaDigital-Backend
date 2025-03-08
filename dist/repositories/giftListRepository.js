@@ -66,7 +66,7 @@ exports.getAllGiftListByUserIdInDatabase = getAllGiftListByUserIdInDatabase;
 const getGiftListBySlugInDatabase = async (slug) => {
     return await prisma.giftList.findUnique({
         where: { slug },
-        include: { banner: true, momentsImages: true, gifts: true },
+        include: { banner: true, momentsImages: true },
     });
 };
 exports.getGiftListBySlugInDatabase = getGiftListBySlugInDatabase;
