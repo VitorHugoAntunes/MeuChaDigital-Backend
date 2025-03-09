@@ -13,6 +13,8 @@ require("./config/passport");
 const getSubdomainMiddleware_1 = __importDefault(require("./middlewares/getSubdomainMiddleware")); // Importe o middleware
 const checkSubdomainMiddleware_1 = __importDefault(require("./middlewares/checkSubdomainMiddleware"));
 const app = (0, express_1.default)();
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_session_1.default)({
     name: 'session',
     secret: 'cats',
@@ -49,7 +51,6 @@ app.use('/api/v1', routes_1.default);
 //     next(); // Continua a execução normalmente se não for uma rota protegida
 //   }
 // });
-app.use(express_1.default.json());
 // Rota de teste para webhook
 app.post('/test-webhook(/pix)?', async (req, res) => {
     try {

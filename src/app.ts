@@ -12,6 +12,9 @@ import checkSubdomainMiddleware from './middlewares/checkSubdomainMiddleware';
 
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(session({
   name: 'session',
   secret: 'cats',
@@ -52,10 +55,6 @@ app.use('/api/v1', routes);
 //     next(); // Continua a execução normalmente se não for uma rota protegida
 //   }
 // });
-
-app.use(express.json());
-
-
 
 // Rota de teste para webhook
 app.post('/test-webhook(/pix)?', async (req: Request, res: Response) => {
