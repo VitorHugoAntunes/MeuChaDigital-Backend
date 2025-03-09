@@ -23,9 +23,7 @@ router.get(
       });
     }
 
-    // Redireciona para a URL correta com base no host da requisição
-    const redirectUrl = `${req.protocol}://${req.get('host')}/lists`;
-    res.redirect(redirectUrl);
+    res.redirect('http://localhost:3000/lists');
   }
 );
 
@@ -41,18 +39,13 @@ router.get('/auth/failure', (_req, res) => {
 });
 
 router.get('/logout', (req: Request, res: Response) => {
-  res.clearCookie('session', { domain: '.localhost', path: '/' });
-  res.clearCookie('session.sig', { domain: '.localhost', path: '/' });
-  res.clearCookie('user', { domain: '.localhost', path: '/' });
+  res.clearCookie('session', { domain: 'localhost', path: '/' });
+  res.clearCookie('session.sig', { domain: 'localhost', path: '/' });
+  res.clearCookie('user', { domain: 'localhost', path: '/' });
 
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Erro ao destruir a sessão:', err);
-      return res.status(500).send('Erro ao efetuar logout');
-    }
-
-    res.send('Logout efetuado com sucesso!');
-  });
+  req.session = {} as any;
+  res.status(200).send({ message: "Logout realizado com sucesso" });
 });
+
 
 export default router;
