@@ -18,6 +18,15 @@ export const createInviteeInDatabase = async (data: InviteeCreate) => {
   });
 };
 
+export const getAllInviteesByGiftListSlugFromDatabase = async (slug: string) => {
+  return prisma.invitee.findMany({
+    where: {
+      giftList: { slug }
+    },
+  });
+};
+
 export default {
   createInviteeInDatabase,
+  getAllInviteesByGiftListSlugFromDatabase,
 };
