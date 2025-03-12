@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGiftList = exports.updateGiftList = exports.getAllGiftListsByUserId = exports.getGiftListById = exports.getAllGiftLists = exports.createGiftList = void 0;
+exports.deleteGiftList = exports.updateGiftList = exports.getGiftListBySlug = exports.getAllGiftListsByUserId = exports.getGiftListById = exports.getAllGiftLists = exports.createGiftList = void 0;
 const giftListService_1 = __importDefault(require("../services/giftListService"));
 const giftListValidator_1 = require("../validators/giftListValidator");
 const zod_1 = require("zod");
@@ -41,11 +41,23 @@ const getAllGiftListsByUserId = async (req, res) => {
     res.json(giftLists);
 };
 exports.getAllGiftListsByUserId = getAllGiftListsByUserId;
+const getGiftListBySlug = async (req, res) => {
+    const slug = req.params.slug;
+    const giftList = await giftListService_1.default.getGiftListBySlugService(slug);
+    if (giftList) {
+        res.json(giftList);
+    }
+    else {
+        res.status(404).json({ error: 'Lista de presentes não encontrada' });
+    }
+};
+exports.getGiftListBySlug = getGiftListBySlug;
 const updateGiftList = async (req, res) => {
     const id = req.params.id;
     try {
-        const { type, name, slug, eventDate, description, shareableLink, status } = giftListValidator_1.updateGiftListSchema.parse(req.body);
-        const giftList = await giftListService_1.default.updateGiftListService(id, { type, name, slug, eventDate, description, shareableLink, status }, req, res);
+        const { userId, giftListId, type, name, slug, eventDate, description, status } = giftListValidator_1.updateGiftListSchema.parse(req.body);
+        console.log('req.body', req.body);
+        const giftList = await giftListService_1.default.updateGiftListService(id, { userId, giftListId, type, name, slug, eventDate, description, status }, req, res);
         res.json(giftList);
     }
     catch (error) {

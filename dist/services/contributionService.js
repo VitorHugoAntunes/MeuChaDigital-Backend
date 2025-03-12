@@ -20,6 +20,9 @@ const createContributionService = async (data) => {
     }
     const paymentDate = await efiService_1.default.getChargeByTxId(data.txId);
     await (0, contributionRepository_1.updateChargePaymentDate)(charge.id, paymentDate.pix[0].horario);
+    if (charge.giftId === null) {
+        return;
+    }
     const contribution = await (0, contributionRepository_1.createContributionInDatabase)(data, charge.giftId, user.id);
     await paymentService_1.default.createPaymentService({
         status: 'PAID',

@@ -22,6 +22,8 @@ exports.createGiftListSchema = zod_1.z.object({
     })).optional(),
 });
 exports.updateGiftListSchema = zod_1.z.object({
+    userId: zod_1.z.string().min(3, 'O ID do usuário está inválido'),
+    giftListId: zod_1.z.string().min(3, 'O ID da lista de presentes está inválido'),
     name: zod_1.z.string().min(3, 'O título deve ter pelo menos 3 caracteres').optional(),
     slug: zod_1.z.string().min(3, 'O slug deve ter pelo menos 3 caracteres').optional(),
     type: zod_1.z.enum(['WEDDING', 'BIRTHDAY', 'BABY_SHOWER']).optional(),

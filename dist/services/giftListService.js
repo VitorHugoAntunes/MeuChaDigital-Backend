@@ -38,6 +38,9 @@ const getGiftListByIdService = async (id) => {
 const getAllGiftListsByUserIdService = async (userId) => {
     return await (0, giftListRepository_1.getAllGiftListByUserIdInDatabase)(userId);
 };
+const getGiftListBySlugService = async (slug) => {
+    return await (0, giftListRepository_1.getGiftListBySlugInDatabase)(slug);
+};
 const updateGiftListService = async (id, data, req, res) => {
     try {
         const existingGiftList = await (0, entityExistenceChecks_1.validateGiftListExists)(id);
@@ -73,6 +76,7 @@ exports.default = {
     getAllGiftListsService,
     getGiftListByIdService,
     getAllGiftListsByUserIdService,
+    getGiftListBySlugService,
     updateGiftListService,
     checkUserHasActiveGiftLists,
     deleteGiftList

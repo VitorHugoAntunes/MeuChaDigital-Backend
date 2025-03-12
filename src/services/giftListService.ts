@@ -3,7 +3,7 @@ import { uploadLocalFilesToS3, deleteS3Files, uploadNewImages, deleteOldImagesFr
 import { updateBanner, updateMomentsImages } from './imageService';
 import { cleanUploadDirectory } from '../utils/cleanUploadDirectory';
 import { validateGiftListExists } from '../utils/entityExistenceChecks';
-import { createGiftListInDatabase, deleteGiftListFromDatabase, getAllGiftListByUserIdInDatabase, getAllGiftListsInDatabase, getGiftListByIdInDatabase, updateGiftListInDatabase, updateGiftListWithImages } from '../repositories/giftListRepository';
+import { createGiftListInDatabase, deleteGiftListFromDatabase, getAllGiftListByUserIdInDatabase, getAllGiftListsInDatabase, getGiftListByIdInDatabase, getGiftListBySlugInDatabase, updateGiftListInDatabase, updateGiftListWithImages } from '../repositories/giftListRepository';
 import { processBanner, processMomentsImages } from '../repositories/imageRepository';
 import { hasActiveGiftLists } from '../repositories/giftListRepository';
 
@@ -49,6 +49,10 @@ const getGiftListByIdService = async (id: string) => {
 const getAllGiftListsByUserIdService = async (userId: string) => {
   return await getAllGiftListByUserIdInDatabase(userId);
 }
+
+const getGiftListBySlugService = async (slug: string) => {
+  return await getGiftListBySlugInDatabase(slug);
+};
 
 const updateGiftListService = async (id: string, data: GiftListUpdate, req: any, res: any) => {
   try {
@@ -97,6 +101,7 @@ export default {
   getAllGiftListsService,
   getGiftListByIdService,
   getAllGiftListsByUserIdService,
+  getGiftListBySlugService,
   updateGiftListService,
   checkUserHasActiveGiftLists,
   deleteGiftList

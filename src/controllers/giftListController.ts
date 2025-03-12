@@ -44,11 +44,22 @@ export const getAllGiftListsByUserId = async (req: Request, res: Response) => {
   res.json(giftLists);
 };
 
+export const getGiftListBySlug = async (req: Request, res: Response) => {
+  const slug = req.params.slug;
+  const giftList = await GiftListService.getGiftListBySlugService(slug);
+  if (giftList) {
+    res.json(giftList);
+  } else {
+    res.status(404).json({ error: 'Lista de presentes não encontrada' });
+  }
+};
+
 export const updateGiftList = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const { type, name, slug, eventDate, description, shareableLink, status } = updateGiftListSchema.parse(req.body);
-    const giftList = await GiftListService.updateGiftListService(id, { type, name, slug, eventDate, description, shareableLink, status }, req, res);
+    const { userId, giftListId, type, name, slug, eventDate, description, status } = updateGiftListSchema.parse(req.body);
+    console.log('req.body', req.body);
+    const giftList = await GiftListService.updateGiftListService(id, { userId, giftListId, type, name, slug, eventDate, description, status }, req, res);
     res.json(giftList);
   } catch (error) {
     if (error instanceof ZodError) {

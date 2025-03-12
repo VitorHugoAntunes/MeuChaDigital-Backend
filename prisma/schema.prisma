@@ -26,6 +26,7 @@ model User {
   list          GiftList[]
   contributions Contribution[]
   charges       Charge[] // Cobranças geradas para este usuário pagar
+  PixKey        PixKey[]
 }
 
 model GiftList {
@@ -143,8 +144,8 @@ model Charge {
   id              String    @id @default(uuid()) @db.Uuid
   localId         String
   txId            String
-  giftId          String    @db.Uuid
-  gift            Gift      @relation(fields: [giftId], references: [id], onDelete: SetNull)
+  giftId          String?   @db.Uuid
+  gift            Gift?     @relation(fields: [giftId], references: [id], onDelete: SetNull)
   payerId         String    @db.Uuid
   payer           User      @relation(fields: [payerId], references: [id])
   value           Float
@@ -180,6 +181,24 @@ model Payment {
   paymentDate    DateTime?
   contributionId String        @unique @db.Uuid
   contribution   Contribution  @relation(fields: [contributionId], references: [id])
+}
+
+model PixKey {
+  id        String     @id @default(uuid()) @db.Uuid
+  key       String     @unique
+  iv        String
+  type      PixKeyType
+  userId    String     @db.Uuid
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+enum PixKeyType {
+  CPF
+  PHONE
+  EMAIL
+  RANDOM
 }
 
 enum PaymentStatus {

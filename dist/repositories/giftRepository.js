@@ -69,6 +69,14 @@ const updateGiftInDatabase = async (id, data, photoId) => {
 };
 exports.updateGiftInDatabase = updateGiftInDatabase;
 const deleteGiftFromDatabase = async (id) => {
-    return prisma.gift.delete({ where: { id } });
+    return prisma.$transaction(async (prisma) => {
+        await prisma.charge.updateMany({
+            where: { giftId: id },
+            data: { giftId: null },
+        });
+        return prisma.gift.delete({
+            where: { id },
+        });
+    });
 };
 exports.deleteGiftFromDatabase = deleteGiftFromDatabase;

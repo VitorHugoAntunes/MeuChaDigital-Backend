@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const pixKeyController_1 = require("../controllers/pixKeyController");
+const router = (0, express_1.Router)();
+router.post('/', pixKeyController_1.createPixKey);
+router.get('/user/:userId', pixKeyController_1.getAllPixKeysByUser);
+router.put('/:id', pixKeyController_1.updatePixKey);
+router.delete('/:id', pixKeyController_1.deletePixKey);
+exports.default = router;

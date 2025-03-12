@@ -30,6 +30,7 @@ export interface GiftListCreate {
   gifts: GiftCreate[];
 }
 export interface GiftListUpdate {
+  giftListId?: string;
   name?: string;
   slug?: string;
   type?: "WEDDING" | "BIRTHDAY" | "BABY_SHOWER";

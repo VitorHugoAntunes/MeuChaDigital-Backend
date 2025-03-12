@@ -28,6 +28,10 @@ const createContributionService = async (data: ContributionCreate) => {
 
   await updateChargePaymentDate(charge.id, paymentDate.pix[0].horario);
 
+  if (charge.giftId === null) {
+    return;
+  }
+
   const contribution = await createContributionInDatabase(data, charge.giftId, user.id);
 
   await PaymentService.createPaymentService({

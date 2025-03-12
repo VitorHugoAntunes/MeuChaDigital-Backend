@@ -28,7 +28,7 @@ export const createInvitee = async (req: Request, res: Response) => {
 export const getAllInviteesByGiftListSlug = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const invitees = await InviteeService.getAllInviteesByGiftListIdService(slug);
+    const invitees = await InviteeService.getAllInviteesByGiftListSlugService(slug);
     res.status(200).json(invitees);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao buscar convidados: ' + (error as Error).message });
