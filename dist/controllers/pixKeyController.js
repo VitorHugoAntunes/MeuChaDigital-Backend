@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deletePixKey = exports.updatePixKey = exports.getAllPixKeysByUser = exports.createPixKey = void 0;
 const pixKeyService_1 = __importDefault(require("../services/pixKeyService"));
 const pixKeyValidator_1 = require("../validators/pixKeyValidator");
+const zod_1 = require("zod");
 const createPixKey = async (req, res) => {
     try {
         const { key, type, userId } = pixKeyValidator_1.createPixKeySchema.parse(req.body);
@@ -13,7 +14,15 @@ const createPixKey = async (req, res) => {
         res.status(201).json(pixKey);
     }
     catch (error) {
-        res.status(500).json({ error: 'Erro ao criar chave PIX: ' + error.message });
+        if (error instanceof zod_1.ZodError) {
+            res.status(400).json({ error: 'Erro de validação: ' + error.errors[0].message });
+        }
+        else if (error instanceof Error) {
+            res.status(500).json({ error: 'Erro ao criar chave PIX: ' + error.message });
+        }
+        else {
+            res.status(500).json({ error: 'Erro desconhecido ao criar chave PIX' });
+        }
     }
 };
 exports.createPixKey = createPixKey;

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 
 import PixKeyService from '../services/pixKeyService';
 import { createPixKeySchema } from '../validators/pixKeyValidator';
+import { ZodError } from 'zod';
 
 export const createPixKey = async (req: Request, res: Response) => {
   try {
@@ -9,7 +10,13 @@ export const createPixKey = async (req: Request, res: Response) => {
     const pixKey = await PixKeyService.createPixKeyService({ key, type, userId });
     res.status(201).json(pixKey);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar chave PIX: ' + (error as Error).message });
+    if (error instanceof ZodError) {
+      res.status(400).json({ error: 'Erro de validação: ' + error.errors[0].message });
+    } else if (error instanceof Error) {
+      res.status(500).json({ error: 'Erro ao criar chave PIX: ' + error.message });
+    } else {
+      res.status(500).json({ error: 'Erro desconhecido ao criar chave PIX' });
+    }
   }
 };
 
