@@ -1,4 +1,3 @@
-// src/repositories/inviteeRepository.ts
 import { PrismaClient } from '@prisma/client';
 import { InviteeCreate } from '../models/inviteeModel';
 

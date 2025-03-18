@@ -10,7 +10,6 @@ const encryptPixKey = (key) => {
     if (!process.env.ENCRYPTION_KEY) {
         throw new Error('ENCRYPTION_KEY is not defined');
     }
-    // Corrigido: Use 'hex' para decodificar a chave
     const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
     console.log(encryptionKey.length); // Deve ser 32
     if (encryptionKey.length !== 32) {
@@ -26,7 +25,6 @@ const decryptPixKey = (encryptedKey, iv) => {
     if (!process.env.ENCRYPTION_KEY) {
         throw new Error('ENCRYPTION_KEY is not defined');
     }
-    // Corrigido: Use 'hex' para decodificar a chave
     const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
     if (encryptionKey.length !== 32) {
         throw new Error('ENCRYPTION_KEY must be 32 bytes');

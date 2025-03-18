@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllInviteesByGiftListSlugFromDatabase = exports.createInviteeInDatabase = void 0;
-// src/repositories/inviteeRepository.ts
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createInviteeInDatabase = async (data) => {
