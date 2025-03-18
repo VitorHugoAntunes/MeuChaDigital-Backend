@@ -7,7 +7,7 @@ const validateUploadFilesMiddleware_1 = require("../middlewares/validateUploadFi
 const router = (0, express_1.Router)();
 // GiftList routes
 router.get('/', giftListController_1.getAllGiftLists);
-router.get('/:id', giftListController_1.getGiftListById);
+// router.get('/:id', getGiftListById);
 router.get('/slug/:slug', giftListController_1.getGiftListBySlug);
 router.get('/user/:userId', giftListController_1.getAllGiftListsByUserId);
 router.post('/', validateUploadFilesMiddleware_1.uploadMiddleware, validateUploadFilesMiddleware_1.validateUploadedFilesForGiftList, giftListController_1.createGiftList);

@@ -67,9 +67,10 @@ const updateGift = async (req, res) => {
     const userId = req.body.userId;
     const giftListId = req.params.id;
     const giftId = req.params.giftId;
+    const parsedTotalValue = parseFloat(req.body.totalValue);
     try {
-        const { name, priority, description, totalValue, categoryId } = giftValidator_1.updateGiftSchema.parse(req.body);
-        const gift = await giftService_1.default.updateGiftService(userId, giftListId, giftId, { name, priority, description, totalValue, categoryId }, req);
+        const { name, priority, description, totalValue, categoryId } = giftValidator_1.updateGiftSchema.parse({ ...req.body, totalValue: parsedTotalValue });
+        const gift = await giftService_1.default.updateGiftService(userId, giftListId, giftId, { name, priority, description, totalValue: parsedTotalValue, categoryId }, req);
         res.json(gift);
     }
     catch (error) {

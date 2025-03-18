@@ -17,7 +17,7 @@ import { getGiftListByIdInDatabase } from '../repositories/giftListRepository';
 const createGiftService = async (data: GiftCreate, req: any, res: any) => {
   const gift = await createGiftInDatabase(data);
 
-  const uploadedFilesUrls = await uploadLocalFilesToS3(req.body.userId, data.giftListId, gift.id);
+  const uploadedFilesUrls = await uploadLocalFilesToS3(req.body.userId, data.giftListId, "giftPhoto", gift.id);
   const giftPhotoUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
 
   if (giftPhotoUrl) {
@@ -50,8 +50,15 @@ const updateGiftService = async (userId: string, giftListId: string, giftId: str
   try {
     const existingGift = await getGiftByIdFromDatabase(giftId);
 
-    const hasNewImage = req.files['giftPhoto'];
-    await deleteOldImagesFromS3(userId, giftListId, hasNewImage, giftId);
+    const hasNewImage = !!req.files?.giftPhoto;
+
+    console.log({
+      userId,
+      giftListId,
+      giftId,
+      hasNewImage,
+    })
+    await deleteOldImagesFromS3(userId, giftListId, hasNewImage, req, giftId);
 
     if (!existingGift) {
       throw new Error('Gift not found');

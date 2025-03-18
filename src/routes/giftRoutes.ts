@@ -11,7 +11,7 @@ import {
 
 import {
   createGiftList,
-  getGiftListById,
+  // getGiftListById,
   getAllGiftLists,
   getGiftListBySlug,
   updateGiftList,
@@ -25,7 +25,7 @@ const router = Router();
 
 // GiftList routes
 router.get('/', getAllGiftLists);
-router.get('/:id', getGiftListById);
+// router.get('/:id', getGiftListById);
 router.get('/slug/:slug', getGiftListBySlug);
 router.get('/user/:userId', getAllGiftListsByUserId);
 router.post('/', uploadMiddleware, validateUploadedFilesForGiftList, createGiftList);

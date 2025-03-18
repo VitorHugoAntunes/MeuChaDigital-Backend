@@ -8,7 +8,7 @@ const imageService_1 = require("./imageService");
 const giftListRepository_1 = require("../repositories/giftListRepository");
 const createGiftService = async (data, req, res) => {
     const gift = await (0, giftRepository_1.createGiftInDatabase)(data);
-    const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, data.giftListId, gift.id);
+    const uploadedFilesUrls = await (0, imageUploadService_1.uploadLocalFilesToS3)(req.body.userId, data.giftListId, "giftPhoto", gift.id);
     const giftPhotoUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
     if (giftPhotoUrl) {
         const photoId = await (0, imageRepository_1.processGiftImage)(giftPhotoUrl, gift.id);
@@ -32,8 +32,14 @@ const getGiftByGiftListSlugService = async (slug, giftId) => {
 const updateGiftService = async (userId, giftListId, giftId, data, req) => {
     try {
         const existingGift = await (0, giftRepository_1.getGiftByIdFromDatabase)(giftId);
-        const hasNewImage = req.files['giftPhoto'];
-        await (0, imageUploadService_1.deleteOldImagesFromS3)(userId, giftListId, hasNewImage, giftId);
+        const hasNewImage = !!req.files?.giftPhoto;
+        console.log({
+            userId,
+            giftListId,
+            giftId,
+            hasNewImage,
+        });
+        await (0, imageUploadService_1.deleteOldImagesFromS3)(userId, giftListId, hasNewImage, req, giftId);
         if (!existingGift) {
             throw new Error('Gift not found');
         }
