@@ -5,6 +5,20 @@ const prisma = new PrismaClient();
 const processBanner = async (bannerUrl: string | undefined, giftListId: string) => {
   if (!bannerUrl) return undefined;
 
+  const existingBanner = await prisma.image.findFirst({
+    where: {
+      bannerForGiftListId: giftListId,
+    },
+  });
+
+  if (existingBanner) {
+    await prisma.image.delete({
+      where: {
+        id: existingBanner.id,
+      },
+    });
+  }
+
   const createdBanner = await prisma.image.create({
     data: {
       url: bannerUrl,
@@ -16,25 +30,29 @@ const processBanner = async (bannerUrl: string | undefined, giftListId: string) 
   return createdBanner.id;
 };
 
-const processMomentsImages = async (momentsImagesUrls: string[], giftListId: string) => {
-  if (momentsImagesUrls.length === 0) return undefined;
+const processMomentsImages = async (momentsUrls: string[], giftListId: string) => {
+  return await prisma.$transaction(async (prisma) => {
 
-  const createdImages = await Promise.all(
-    momentsImagesUrls.map(async (url) => {
-      return prisma.image.create({
-        data: {
-          url,
-          type: 'MOMENT',
-          momentsForGiftListId: giftListId,
-        },
-      });
-    })
-  );
+    await prisma.image.deleteMany({
+      where: { momentsForGiftListId: giftListId },
+    });
 
-  return {
-    connect: createdImages.map((img) => ({ id: img.id })),
-  };
+    await prisma.image.createMany({
+      data: momentsUrls.map((url) => ({
+        url,
+        type: 'MOMENT',
+        momentsForGiftListId: giftListId,
+      })),
+    });
+
+    const momentsImages = await prisma.image.findMany({
+      where: { momentsForGiftListId: giftListId },
+    });
+
+    return momentsImages;
+  });
 };
+
 
 export const processGiftImage = async (url: string, giftId: string) => {
   const createdImage = await prisma.image.create({
@@ -62,4 +80,12 @@ const deleteImageFromGift = async (imageId: string) => {
   });
 };
 
-export { processBanner, processMomentsImages, deleteImagesFromGiftList, deleteImageFromGift };
+const deleteBannerFromGiftList = async (giftListId: string) => {
+  return await prisma.image.deleteMany({
+    where: {
+      bannerForGiftListId: giftListId,
+    },
+  });
+};
+
+export { processBanner, processMomentsImages, deleteImagesFromGiftList, deleteImageFromGift, deleteBannerFromGiftList };

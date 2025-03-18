@@ -44,10 +44,14 @@ const getAllGiftListsInDatabase = async () => {
 };
 exports.getAllGiftListsInDatabase = getAllGiftListsInDatabase;
 const getGiftListByIdInDatabase = async (id) => {
-    return await prisma.giftList.findUnique({
+    const giftList = await prisma.giftList.findUnique({
         where: { id },
         include: { banner: true, momentsImages: true },
     });
+    if (!giftList) {
+        throw new Error('Lista de presentes não encontrada.');
+    }
+    return giftList;
 };
 exports.getGiftListByIdInDatabase = getGiftListByIdInDatabase;
 const getAllGiftListByUserIdInDatabase = async (userId) => {
@@ -77,24 +81,25 @@ const getGiftListBySlugWithoutImagesInDatabase = async (slug) => {
 };
 exports.getGiftListBySlugWithoutImagesInDatabase = getGiftListBySlugWithoutImagesInDatabase;
 const updateGiftListInDatabase = async (id, data, bannerId, momentsImages) => {
+    // Isso filtra apenas os campos que realmente serão atualizados
+    const updateData = {
+        ...(data.name && { name: data.name }),
+        ...(data.slug && { slug: (0, formatSlug_1.formatSlug)(data.slug) }),
+        ...(data.type && { type: data.type }),
+        ...(data.eventDate && { eventDate: new Date(data.eventDate) }),
+        ...(data.description && { description: data.description }),
+        ...(data.shareableLink && { shareableLink: data.shareableLink }),
+        ...(data.status && { status: data.status }),
+        ...(bannerId && { bannerId }),
+    };
+    if (momentsImages) {
+        updateData.momentsImages = {
+            connect: momentsImages.map((image) => ({ id: image.id })),
+        };
+    }
     return await prisma.giftList.update({
         where: { id },
-        data: {
-            name: data.name,
-            slug: data.slug,
-            type: data.type,
-            eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
-            description: data.description,
-            shareableLink: data.shareableLink,
-            status: data.status,
-            bannerId,
-            momentsImages,
-        },
-        include: {
-            banner: true,
-            momentsImages: true,
-            gifts: true,
-        },
+        data: updateData,
     });
 };
 exports.updateGiftListInDatabase = updateGiftListInDatabase;
@@ -105,6 +110,7 @@ const hasActiveGiftLists = async (userId) => {
 };
 exports.hasActiveGiftLists = hasActiveGiftLists;
 const deleteGiftListFromDatabase = async (id) => {
+    console.log('id da lista para que vai ser deletada', id);
     return await prisma.giftList.delete({ where: { id } });
 };
 exports.deleteGiftListFromDatabase = deleteGiftListFromDatabase;

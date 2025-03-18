@@ -41,4 +41,5 @@ export interface GiftListUpdate {
   shareableLink?: string;
   userId?: string;
   status?: "ACTIVE" | "INACTIVE";
+  momentsImagesToDelete?: string[];
 }

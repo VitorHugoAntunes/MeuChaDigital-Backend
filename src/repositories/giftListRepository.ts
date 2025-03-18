@@ -44,10 +44,16 @@ const getAllGiftListsInDatabase = async () => {
 };
 
 const getGiftListByIdInDatabase = async (id: string) => {
-  return await prisma.giftList.findUnique({
+  const giftList = await prisma.giftList.findUnique({
     where: { id },
     include: { banner: true, momentsImages: true },
   });
+
+  if (!giftList) {
+    throw new Error('Lista de presentes não encontrada.');
+  }
+
+  return giftList;
 };
 
 const getAllGiftListByUserIdInDatabase = async (userId: string) => {
@@ -83,24 +89,27 @@ const updateGiftListInDatabase = async (
   bannerId?: string,
   momentsImages?: any
 ) => {
+  // Isso filtra apenas os campos que realmente serão atualizados
+  const updateData: any = {
+    ...(data.name && { name: data.name }),
+    ...(data.slug && { slug: formatSlug(data.slug) }),
+    ...(data.type && { type: data.type }),
+    ...(data.eventDate && { eventDate: new Date(data.eventDate) }),
+    ...(data.description && { description: data.description }),
+    ...(data.shareableLink && { shareableLink: data.shareableLink }),
+    ...(data.status && { status: data.status }),
+    ...(bannerId && { bannerId }),
+  };
+
+  if (momentsImages) {
+    updateData.momentsImages = {
+      connect: momentsImages.map((image: any) => ({ id: image.id })),
+    };
+  }
+
   return await prisma.giftList.update({
     where: { id },
-    data: {
-      name: data.name,
-      slug: data.slug,
-      type: data.type,
-      eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
-      description: data.description,
-      shareableLink: data.shareableLink,
-      status: data.status,
-      bannerId,
-      momentsImages,
-    },
-    include: {
-      banner: true,
-      momentsImages: true,
-      gifts: true,
-    },
+    data: updateData,
   });
 };
 
@@ -111,6 +120,7 @@ const hasActiveGiftLists = async (userId: string) => {
 };
 
 const deleteGiftListFromDatabase = async (id: string) => {
+  console.log('id da lista para que vai ser deletada', id);
   return await prisma.giftList.delete({ where: { id } });
 };
 

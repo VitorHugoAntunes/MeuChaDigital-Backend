@@ -1,19 +1,26 @@
 import fs from 'fs';
 import path from 'path';
 import s3 from '../config/aws';
-import { PutObjectCommand, ListObjectsCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, ListObjectsCommand, DeleteObjectsCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
-const uploadLocalFilesToS3 = async (userId: string, giftListId: string, giftId?: string) => {
-  const uploadsDir = path.join(__dirname, "..", "..", "uploads", userId);
+const uploadLocalFilesToS3 = async (
+  userId: string,
+  giftListId: string,
+  imageType: 'banner' | 'moments' | 'giftPhoto',
+  giftId?: string
+) => {
+
+  const subfolder = imageType === 'banner' ? 'banner' : imageType === 'moments' ? 'moments_images' : 'giftPhoto';
+  const uploadsDir = path.join(__dirname, "..", "..", "uploads", userId, subfolder);
 
   if (!fs.existsSync(uploadsDir)) {
-    console.log(`A pasta de uploads para o usuário ${userId} não existe.`);
+    console.log(`A pasta de uploads para o usuário ${userId} e tipo ${imageType} não existe.`);
     return [];
   }
 
   const files = fs.readdirSync(uploadsDir);
   if (files.length === 0) {
-    console.log(`Nenhum arquivo encontrado na pasta de uploads para o usuário ${userId}.`);
+    console.log(`Nenhum arquivo encontrado na pasta de uploads para o usuário ${userId} e tipo ${imageType}.`);
     return [];
   }
 
@@ -25,11 +32,13 @@ const uploadLocalFilesToS3 = async (userId: string, giftListId: string, giftId?:
     const finalFileName =
       fileExtension === ".jpeg" || fileExtension === ".jpg" ? file : `${baseName}.jpeg`;
 
+    const s3Subfolder = imageType === 'banner' ? 'banner' : imageType === 'moments' ? 'momentsImages' : 'giftsImages';
+
     const uploadParams = {
       Bucket: process.env.AWS_BUCKET_NAME!,
       Key: giftId
         ? `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/${finalFileName}`
-        : `uploads/${userId}/giftLists/${giftListId}/listsImages/${finalFileName}`,
+        : `uploads/${userId}/giftLists/${giftListId}/listsImages/${s3Subfolder}/${finalFileName}`,
       Body: fs.createReadStream(filePath),
       ContentType: "image/jpeg",
     };
@@ -39,7 +48,7 @@ const uploadLocalFilesToS3 = async (userId: string, giftListId: string, giftId?:
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
       console.log(`✅ Upload concluído: ${fileUrl}`);
 
-      fs.unlinkSync(filePath);
+      fs.unlinkSync(filePath); // Isso remove o arquivo local após o upload
       return fileUrl;
     } catch (error) {
       console.error(`Erro ao fazer upload de ${file}:`, error);
@@ -52,7 +61,13 @@ const uploadLocalFilesToS3 = async (userId: string, giftListId: string, giftId?:
   return uploadedFilesUrls;
 };
 
-const deleteS3Files = async (userId: string, giftListId: string, deleteAll?: boolean, giftId?: string,) => {
+const deleteS3Files = async (
+  userId: string,
+  giftListId: string,
+  deleteAll?: boolean,
+  giftId?: string,
+  imageType?: 'banner' | 'moments' | 'giftPhoto'
+) => {
   let prefix;
 
   if (deleteAll) {
@@ -62,7 +77,8 @@ const deleteS3Files = async (userId: string, giftListId: string, deleteAll?: boo
   } else if (giftId) {
     prefix = `uploads/${userId}/giftLists/${giftListId}/giftsImages/${giftId}/`;
   } else {
-    prefix = `uploads/${userId}/giftLists/${giftListId}/listsImages/`;
+    const subfolder = imageType === 'banner' ? 'banner' : imageType === 'moments' ? 'momentsImages' : 'giftsImages';
+    prefix = `uploads/${userId}/giftLists/${giftListId}/listsImages/${subfolder}/`;
   }
 
   const listParams = {
@@ -71,7 +87,6 @@ const deleteS3Files = async (userId: string, giftListId: string, deleteAll?: boo
   };
 
   try {
-    // Lista todos os objetos no prefixo especificado
     const data = await s3.send(new ListObjectsCommand(listParams));
     console.log('Arquivos encontrados para deletar:', data.Contents?.length);
 
@@ -80,11 +95,10 @@ const deleteS3Files = async (userId: string, giftListId: string, deleteAll?: boo
         Bucket: process.env.AWS_BUCKET_NAME!,
         Delete: {
           Objects: data.Contents.map((content) => ({ Key: content.Key! })),
-          Quiet: false, // Define como `true` para suprimir erros de deleção
+          Quiet: false,
         },
       };
 
-      // Deleta os objetos
       const deleteResponse = await s3.send(new DeleteObjectsCommand(deleteParams));
       console.log('Arquivos deletados com sucesso:', deleteResponse.Deleted);
     } else {
@@ -97,20 +111,72 @@ const deleteS3Files = async (userId: string, giftListId: string, deleteAll?: boo
 };
 
 const uploadNewImages = async (userId: string, giftListId: string, files: any, giftId?: string) => {
-  if (files['banner'] || files['moments_images'] || files['giftPhoto']) {
-    const uploadedFilesUrls = await uploadLocalFilesToS3(userId, giftListId, giftId);
-    const newBannerUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
-    const newMomentsImagesUrls = uploadedFilesUrls.length > 1 ? uploadedFilesUrls.slice(1) : [];
-    const newGiftPhotoUrl = uploadedFilesUrls.length > 0 ? uploadedFilesUrls[0] : undefined;
-    return { newBannerUrl, newMomentsImagesUrls, newGiftPhotoUrl };
+  let newBannerUrl = undefined;
+  let newMomentsImagesUrls: string[] = [];
+  let newGiftPhotoUrl = undefined;
+
+  if (files['banner']) {
+    const bannerUrls = await uploadLocalFilesToS3(userId, giftListId, 'banner', giftId);
+    newBannerUrl = bannerUrls.length > 0 ? bannerUrls[0] : undefined;
   }
-  return { newBannerUrl: undefined, newMomentsImagesUrls: [] };
+
+  if (files['moments_images']) {
+    const momentsUrls = await uploadLocalFilesToS3(userId, giftListId, 'moments', giftId);
+    newMomentsImagesUrls = momentsUrls;
+  }
+
+  if (files['giftPhoto']) {
+    const giftPhotoUrls = await uploadLocalFilesToS3(userId, giftListId, 'giftPhoto', giftId);
+    newGiftPhotoUrl = giftPhotoUrls.length > 0 ? giftPhotoUrls[0] : undefined;
+  }
+
+  return { newBannerUrl, newMomentsImagesUrls, newGiftPhotoUrl };
 };
 
-const deleteOldImagesFromS3 = async (userId: string, giftListId: string, hasNewImages: boolean, giftId?: string,) => {
-  if (hasNewImages) {
-    await deleteS3Files(userId, giftListId, true, giftId);
+
+const deleteOldImagesFromS3 = async (
+  userId: string,
+  giftListId: string,
+  hasNewImages: boolean,
+  req: any,
+  giftId?: string
+) => {
+  if (hasNewImages && !giftId) {
+    if (req.files['banner']) {
+      console.log("Deletando imagens antigas de banner...");
+      await deleteS3Files(userId, giftListId, false, giftId, 'banner');
+    }
+
+    if (req.files['moments_images']) {
+      console.log("Deletando imagens antigas de momentos...");
+      await deleteS3Files(userId, giftListId, false, giftId, 'moments');
+    }
+  }
+
+  if (hasNewImages && giftId) {
+    await deleteS3Files(userId, giftListId, false, giftId, 'giftPhoto');
   }
 };
 
-export { uploadLocalFilesToS3, uploadNewImages, deleteS3Files, deleteOldImagesFromS3 };
+const deleteSpecificMomentsImages = async (userId: string, giftListId: string, momentsImagesToDelete: string[]) => {
+  try {
+    const deletePromises = momentsImagesToDelete.map(async (url) => {
+      const key = url.split(`https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`)[1];
+      if (key) {
+        const deleteParams = {
+          Bucket: process.env.AWS_BUCKET_NAME!,
+          Key: key,
+        };
+        await s3.send(new DeleteObjectCommand(deleteParams));
+        console.log(`✅ Imagem deletada: ${key}`);
+      }
+    });
+
+    await Promise.all(deletePromises);
+  } catch (error) {
+    console.error("Erro ao deletar imagens específicas de momentos:", error);
+    throw error;
+  }
+};
+
+export { uploadLocalFilesToS3, uploadNewImages, deleteS3Files, deleteOldImagesFromS3, deleteSpecificMomentsImages };

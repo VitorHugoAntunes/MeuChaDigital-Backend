@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGiftList = exports.updateGiftList = exports.getGiftListBySlug = exports.getAllGiftListsByUserId = exports.getGiftListById = exports.getAllGiftLists = exports.createGiftList = void 0;
+exports.deleteGiftList = exports.updateGiftList = exports.getGiftListBySlug = exports.getAllGiftListsByUserId = exports.getAllGiftLists = exports.createGiftList = void 0;
 const giftListService_1 = __importDefault(require("../services/giftListService"));
 const giftListValidator_1 = require("../validators/giftListValidator");
 const zod_1 = require("zod");
@@ -24,17 +24,15 @@ const getAllGiftLists = async (req, res) => {
     res.json(giftLists);
 };
 exports.getAllGiftLists = getAllGiftLists;
-const getGiftListById = async (req, res) => {
-    const id = req.params.id;
-    const giftList = await giftListService_1.default.getGiftListByIdService(id);
-    if (giftList) {
-        res.json(giftList);
-    }
-    else {
-        res.status(404).json({ error: 'Lista de presentes não encontrada' });
-    }
-};
-exports.getGiftListById = getGiftListById;
+// export const getGiftListById = async (req: Request, res: Response) => {
+//   const id = req.params.id;
+//   const giftList = await GiftListService.getGiftListByIdService(id);
+//   if (giftList) {
+//     res.json(giftList);
+//   } else {
+//     res.status(404).json({ error: 'Lista de presentes não encontrada' });
+//   }
+// }
 const getAllGiftListsByUserId = async (req, res) => {
     const userId = req.params.userId;
     const giftLists = await giftListService_1.default.getAllGiftListsByUserIdService(userId);
@@ -73,9 +71,9 @@ exports.updateGiftList = updateGiftList;
 const deleteGiftList = async (req, res) => {
     const id = req.params.id;
     try {
-        const giftList = await giftListService_1.default.deleteGiftList(id);
-        if (giftList) {
-            res.json(giftList);
+        const deleted = await giftListService_1.default.deleteGiftList(id);
+        if (deleted) {
+            res.status(204).send();
         }
         else {
             res.status(404).json({ error: 'Lista de presentes não encontrada' });

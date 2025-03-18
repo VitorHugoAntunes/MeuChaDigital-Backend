@@ -28,15 +28,15 @@ export const getAllGiftLists = async (req: Request, res: Response) => {
   res.json(giftLists);
 };
 
-export const getGiftListById = async (req: Request, res: Response) => {
-  const id = req.params.id;
-  const giftList = await GiftListService.getGiftListByIdService(id);
-  if (giftList) {
-    res.json(giftList);
-  } else {
-    res.status(404).json({ error: 'Lista de presentes não encontrada' });
-  }
-}
+// export const getGiftListById = async (req: Request, res: Response) => {
+//   const id = req.params.id;
+//   const giftList = await GiftListService.getGiftListByIdService(id);
+//   if (giftList) {
+//     res.json(giftList);
+//   } else {
+//     res.status(404).json({ error: 'Lista de presentes não encontrada' });
+//   }
+// }
 
 export const getAllGiftListsByUserId = async (req: Request, res: Response) => {
   const userId = req.params.userId;
@@ -73,9 +73,10 @@ export const updateGiftList = async (req: Request, res: Response) => {
 export const deleteGiftList = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const giftList = await GiftListService.deleteGiftList(id);
-    if (giftList) {
-      res.json(giftList);
+    const deleted = await GiftListService.deleteGiftList(id);
+
+    if (deleted) {
+      res.status(204).send();
     } else {
       res.status(404).json({ error: 'Lista de presentes não encontrada' });
     }
