@@ -18,7 +18,7 @@ export const createUser = async (params: CreateUserParams) => {
   try {
     const { name, email, googleId, photo } = createUserSchema.parse(params);
     const user = await UserService.createUserService({ name, email, googleId, photo });
-    return user; // Retorna o usuário criado
+    return user;
   } catch (error) {
     if (error instanceof ZodError) {
       throw new Error('Erro de validação: ' + error.errors.map(e => e.message).join(', '));

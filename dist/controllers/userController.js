@@ -11,7 +11,7 @@ const createUser = async (params) => {
     try {
         const { name, email, googleId, photo } = userValidator_1.createUserSchema.parse(params);
         const user = await userService_1.default.createUserService({ name, email, googleId, photo });
-        return user; // Retorna o usuário criado
+        return user;
     }
     catch (error) {
         if (error instanceof zod_1.ZodError) {
