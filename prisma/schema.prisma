@@ -47,12 +47,22 @@ model GiftList {
   status        GiftListStatus
   gifts         Gift[]
   invitees      Invitee[]
+
+  oldSlugs GiftListSlugHistory[]
 }
 
 enum GiftListType {
   BIRTHDAY
   WEDDING
   BABY_SHOWER
+}
+
+model GiftListSlugHistory {
+  id         String   @id @default(uuid()) @db.Uuid
+  oldSlug    String   @unique
+  giftListId String   @db.Uuid
+  giftList   GiftList @relation(fields: [giftListId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
 }
 
 model Image {
